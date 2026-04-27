@@ -3,8 +3,7 @@ import { neon } from '@neondatabase/serverless';
 export default async function handler(req, res) {
     const sql = neon(process.env.DATABASE_URL);
 
-    // Crea la tabla automáticamente la primera vez que se ejecuta
-    await sql`CREATE TABLE IF NOT EXISTS app_state (id INT PRIMARY KEY, data JSONB)`;
+    // Eliminamos la línea: await sql`CREATE TABLE IF NOT EXISTS app_state...`
 
     if (req.method === 'GET') {
         const rows = await sql`SELECT data FROM app_state WHERE id = 1`;
