@@ -4,171 +4,150 @@
     <meta charset="UTF-8">
     <title>Priel Musical</title>
     <style>
-        body { display: flex; height: 100vh; margin: 0; font-family: system-ui, sans-serif; }
+        :root { --accent: #ffc107; }
+        body { display: flex; height: 100vh; margin: 0; font-family: system-ui, sans-serif; background: #fff; }
         
-        .sidebar { width: 250px; background: #f8f9fa; padding: 20px; border-right: 1px solid #e9ecef; display: flex; flex-direction: column; }
-        .app-title { font-size: 18px; font-weight: bold; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; color: #000; }
-        .sidebar h3 { font-size: 14px; color: #6c757d; margin-top: 0; }
+        .sidebar { width: 260px; background: #f8f9fa; padding: 20px; border-right: 1px solid #e9ecef; display: flex; flex-direction: column; }
+        .app-title { font-size: 18px; font-weight: bold; margin-bottom: 25px; color: #000; }
         
-        .project-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .project-item { padding: 10px; background: #e9ecef; border-radius: 6px; cursor: pointer; color: #333; }
-        .project-item.active { background: #ffc107; font-weight: bold; color: #000; }
+        .project-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .project-item { padding: 12px; background: #eee; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .project-item.active { background: var(--accent); font-weight: bold; }
         
-        .add-project-form { margin-top: 20px; display: flex; gap: 5px; }
-        .input-text { flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; }
-        
-        .main { flex: 1; padding: 30px; background: #ffffff; overflow-y: auto; }
-        
-        .tabs { display: flex; gap: 20px; border-bottom: 1px solid #dee2e6; margin-bottom: 20px; }
-        .tab { padding: 10px 5px; cursor: pointer; color: #6c757d; }
-        .tab.active { border-bottom: 3px solid #ffc107; color: #000; font-weight: bold; }
+        .main { flex: 1; padding: 30px; overflow-y: auto; }
+        .tabs { display: flex; gap: 20px; border-bottom: 1px solid #ddd; margin-bottom: 25px; }
+        .tab { padding: 10px 0; cursor: pointer; color: #666; border-bottom: 3px solid transparent; }
+        .tab.active { border-color: var(--accent); color: #000; font-weight: bold; }
 
-        .btn { padding: 6px 12px; border: 1px solid #ced4da; border-radius: 4px; background: white; cursor: pointer; font-weight: bold; }
-        .btn:hover { background: #f8f9fa; }
-        .btn-primary { background: #ffc107; border-color: #ffc107; }
-        .btn-primary:hover { background: #e0a800; }
+        .section-container { margin-bottom: 35px; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
+        .section-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .section-title { font-weight: bold; font-size: 1.1rem; }
+        .color-picker { border: none; width: 30px; height: 30px; cursor: pointer; background: none; }
 
-        .section-container { margin-bottom: 30px; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .section-title { font-weight: bold; font-size: 18px; }
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
         
         .measure { 
-            border: 2px solid #dee2e6; border-radius: 8px; height: 80px; 
+            border: 2px solid #ddd; border-radius: 8px; height: 70px; 
             display: flex; align-items: center; justify-content: center; 
-            font-size: 20px; font-weight: bold; background: #f8f9fa;
+            font-size: 1.2rem; font-weight: bold; background: #fff; position: relative;
         }
-        .add-measure {
-            border: 2px dashed #ced4da; background: transparent; cursor: pointer; color: #6c757d;
-        }
-        .add-measure:hover { background: #f8f9fa; border-color: #adb5bd; color: #495057; }
+        .measure input { width: 80%; border: none; border-bottom: 2px solid var(--accent); outline: none; text-align: center; font-size: 1.1rem; }
+        .save-btn { position: absolute; right: 5px; bottom: 5px; font-size: 12px; cursor: pointer; background: #4caf50; color: white; border: none; border-radius: 3px; }
+
+        .btn { padding: 8px 15px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; background: white; font-weight: 500; }
+        .btn-add { background: var(--accent); border: none; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <div class="app-title">🎵 Priel Musical</div>
-        <h3>PROYECTOS</h3>
         <div class="project-list" id="project-list"></div>
-        
-        <form class="add-project-form" id="add-project-form">
-            <input type="text" id="new-project-input" class="input-text" placeholder="Nuevo proyecto...">
-            <button type="submit" class="btn btn-primary">+</button>
-        </form>
+        <button class="btn btn-add" onclick="addProject()" style="margin-top: 15px;">+ Nueva Canción</button>
     </div>
 
     <div class="main">
-        <h1 id="project-title"></h1>
-        
+        <h1 id="project-name">Selecciona un proyecto</h1>
         <div class="tabs">
             <div class="tab">Pizarra</div>
             <div class="tab active">Score</div>
-            <div class="tab">Entrenamiento</div>
         </div>
 
-        <div style="margin-bottom: 20px;">
-            <button class="btn" id="btn-add-section">+ Agregar Sección</button>
-        </div>
-
-        <div id="sections-container"></div>
+        <button class="btn" onclick="addSection()" style="margin-bottom: 20px;">+ Sección</button>
+        <div id="sections-content"></div>
     </div>
 
     <script>
-        // Estado inicial
-        let projects = [
-            { id: 1, name: "Can't Get You Off My Mind", sections: [
-                { id: 101, name: "Intro", measures: ["G", "%", "Am", "%"] }
-            ]}
-        ];
-        let activeProjectId = 1;
+        let projects = [{ id: 1, name: "Demo", sections: [] }];
+        let activeId = 1;
 
-        // Referencias del DOM
-        const projectListEl = document.getElementById('project-list');
-        const projectTitleEl = document.getElementById('project-title');
-        const sectionsContainerEl = document.getElementById('sections-container');
-        const addProjectForm = document.getElementById('add-project-form');
-        const newProjectInput = document.getElementById('new-project-input');
-        const btnAddSection = document.getElementById('btn-add-section');
-
-        // Función de renderizado
         function render() {
-            // Renderizar lista de proyectos
-            projectListEl.innerHTML = '';
-            projects.forEach(project => {
-                const div = document.createElement('div');
-                div.className = `project-item ${project.id === activeProjectId ? 'active' : ''}`;
-                div.textContent = project.name;
-                div.onclick = () => { 
-                    activeProjectId = project.id; 
-                    render(); 
-                };
-                projectListEl.appendChild(div);
-            });
+            const list = document.getElementById('project-list');
+            list.innerHTML = projects.map(p => `
+                <div class="project-item ${p.id === activeId ? 'active' : ''}" onclick="selectProject(${p.id})">
+                    ${p.name}
+                </div>
+            `).join('');
 
-            // Renderizar área principal
-            const activeProject = projects.find(p => p.id === activeProjectId);
-            if (activeProject) {
-                projectTitleEl.textContent = activeProject.name;
-                sectionsContainerEl.innerHTML = '';
-                
-                if (activeProject.sections.length === 0) {
-                    sectionsContainerEl.innerHTML = '<p style="color: #6c757d">No hay secciones. Agrega una para empezar a componer.</p>';
-                }
+            const project = projects.find(p => p.id === activeId);
+            if (!project) return;
 
-                activeProject.sections.forEach(section => {
-                    const sectionDiv = document.createElement('div');
-                    sectionDiv.className = 'section-container';
-                    
-                    let measuresHtml = section.measures.map(m => `<div class="measure">${m}</div>`).join('');
-                    measuresHtml += `<button class="measure add-measure" onclick="addMeasure(${section.id})">+</button>`;
+            document.getElementById('project-name').textContent = project.name;
+            const container = document.getElementById('sections-content');
+            container.innerHTML = project.sections.map(s => `
+                <div class="section-container" style="background-color: ${s.color}20; border-left: 5px solid ${s.color}">
+                    <div class="section-header">
+                        <input type="color" class="color-picker" value="${s.color}" onchange="updateColor(${s.id}, this.value)">
+                        <span class="section-title">${s.name}</span>
+                    </div>
+                    <div class="grid">
+                        ${s.measures.map((m, idx) => `
+                            <div class="measure" id="m-${s.id}-${idx}">
+                                ${m.editing ? 
+                                    `<input type="text" id="in-${s.id}-${idx}" value="${m.val}" onkeypress="handleKey(event, ${s.id}, ${idx})">
+                                     <button class="save-btn" onclick="saveMeasure(${s.id}, ${idx})">✓</button>` : 
+                                    `<span onclick="editMeasure(${s.id}, ${idx})">${m.val || '...'}</span>`
+                                }
+                            </div>
+                        `).join('')}
+                        <div class="measure" style="border-style: dashed; cursor: pointer" onclick="addMeasure(${s.id})">+</div>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-                    sectionDiv.innerHTML = `
-                        <div class="section-header">
-                            <div class="section-title">${section.name}</div>
-                        </div>
-                        <div class="grid">${measuresHtml}</div>
-                    `;
-                    sectionsContainerEl.appendChild(sectionDiv);
-                });
+        function addProject() {
+            const name = prompt("Nombre de la canción:");
+            if (name) {
+                const newP = { id: Date.now(), name, sections: [] };
+                projects.push(newP);
+                activeId = newP.id;
+                render();
             }
         }
 
-        // Eventos
-        addProjectForm.onsubmit = (e) => {
-            e.preventDefault();
-            const name = newProjectInput.value.trim();
+        function selectProject(id) { activeId = id; render(); }
+
+        function addSection() {
+            const name = prompt("Nombre de sección (Intro, Verso...):");
             if (!name) return;
-            
-            const newProject = { id: Date.now(), name, sections: [] };
-            projects.push(newProject);
-            activeProjectId = newProject.id;
-            newProjectInput.value = '';
+            const p = projects.find(p => p.id === activeId);
+            p.sections.push({ id: Date.now(), name, color: '#f8f9fa', measures: [] });
             render();
-        };
+        }
 
-        btnAddSection.onclick = () => {
-            const name = prompt("Nombre de la nueva sección (ej: Verso 1, Estribillo):");
-            if (!name) return;
-            
-            const activeProject = projects.find(p => p.id === activeProjectId);
-            activeProject.sections.push({ id: Date.now(), name, measures: [] });
+        function updateColor(secId, color) {
+            const p = projects.find(p => p.id === activeId);
+            const s = p.sections.find(s => s.id === secId);
+            s.color = color;
             render();
-        };
+        }
 
-        window.addMeasure = (sectionId) => {
-            const chord = prompt("Ingresa el acorde para este compás (ej: G, Am, %):");
-            if (!chord) return;
-            
-            const activeProject = projects.find(p => p.id === activeProjectId);
-            const section = activeProject.sections.find(s => s.id === sectionId);
-            if (section) {
-                section.measures.push(chord);
-            }
+        function addMeasure(secId) {
+            const p = projects.find(p => p.id === activeId);
+            const s = p.sections.find(s => s.id === secId);
+            s.measures.push({ val: '', editing: true });
             render();
-        };
+            document.getElementById(`in-${secId}-${s.measures.length - 1}`).focus();
+        }
 
-        // Renderizado inicial
+        function editMeasure(secId, idx) {
+            const p = projects.find(p => p.id === activeId);
+            const s = p.sections.find(s => s.id === secId);
+            s.measures[idx].editing = true;
+            render();
+        }
+
+        function saveMeasure(secId, idx) {
+            const val = document.getElementById(`in-${secId}-${idx}`).value;
+            const p = projects.find(p => p.id === activeId);
+            const s = p.sections.find(s => s.id === secId);
+            s.measures[idx] = { val: val || '%', editing: false };
+            render();
+        }
+
+        function handleKey(e, secId, idx) { if (e.key === 'Enter') saveMeasure(secId, idx); }
+
         render();
     </script>
 </body>
