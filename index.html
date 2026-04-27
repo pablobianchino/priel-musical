@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Priel Musical</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         body { display: flex; height: 100vh; margin: 0; font-family: system-ui, sans-serif; }
         
@@ -50,155 +47,129 @@
 </head>
 <body>
 
-    <div id="root"></div>
+    <div class="sidebar">
+        <div class="app-title">🎵 Priel Musical</div>
+        <h3>PROYECTOS</h3>
+        <div class="project-list" id="project-list"></div>
+        
+        <form class="add-project-form" id="add-project-form">
+            <input type="text" id="new-project-input" class="input-text" placeholder="Nuevo proyecto...">
+            <button type="submit" class="btn btn-primary">+</button>
+        </form>
+    </div>
 
-    <script type="text/babel">
-        const { useState } = React;
+    <div class="main">
+        <h1 id="project-title"></h1>
+        
+        <div class="tabs">
+            <div class="tab">Pizarra</div>
+            <div class="tab active">Score</div>
+            <div class="tab">Entrenamiento</div>
+        </div>
 
-        function App() {
-            // Estado de proyectos
-            const [projects, setProjects] = useState([
-                { id: 1, name: "Can't Get You Off My Mind", sections: [
-                    { id: 101, name: "Intro", measures: ["G", "%", "Am", "%"] }
-                ]}
-            ]);
-            const [activeProjectId, setActiveProjectId] = useState(1);
-            const [newProjectName, setNewProjectName] = useState("");
+        <div style="margin-bottom: 20px;">
+            <button class="btn" id="btn-add-section">+ Agregar Sección</button>
+        </div>
 
-            const activeProject = projects.find(p => p.id === activeProjectId);
+        <div id="sections-container"></div>
+    </div>
 
-            // Funciones de manejo de datos
-            const handleAddProject = (e) => {
-                e.preventDefault();
-                if (!newProjectName.trim()) return;
-                
-                const newProject = {
-                    id: Date.now(),
-                    name: newProjectName,
-                    sections: []
+    <script>
+        // Estado inicial
+        let projects = [
+            { id: 1, name: "Can't Get You Off My Mind", sections: [
+                { id: 101, name: "Intro", measures: ["G", "%", "Am", "%"] }
+            ]}
+        ];
+        let activeProjectId = 1;
+
+        // Referencias del DOM
+        const projectListEl = document.getElementById('project-list');
+        const projectTitleEl = document.getElementById('project-title');
+        const sectionsContainerEl = document.getElementById('sections-container');
+        const addProjectForm = document.getElementById('add-project-form');
+        const newProjectInput = document.getElementById('new-project-input');
+        const btnAddSection = document.getElementById('btn-add-section');
+
+        // Función de renderizado
+        function render() {
+            // Renderizar lista de proyectos
+            projectListEl.innerHTML = '';
+            projects.forEach(project => {
+                const div = document.createElement('div');
+                div.className = `project-item ${project.id === activeProjectId ? 'active' : ''}`;
+                div.textContent = project.name;
+                div.onclick = () => { 
+                    activeProjectId = project.id; 
+                    render(); 
                 };
+                projectListEl.appendChild(div);
+            });
+
+            // Renderizar área principal
+            const activeProject = projects.find(p => p.id === activeProjectId);
+            if (activeProject) {
+                projectTitleEl.textContent = activeProject.name;
+                sectionsContainerEl.innerHTML = '';
                 
-                setProjects([...projects, newProject]);
-                setActiveProjectId(newProject.id);
-                setNewProjectName("");
-            };
+                if (activeProject.sections.length === 0) {
+                    sectionsContainerEl.innerHTML = '<p style="color: #6c757d">No hay secciones. Agrega una para empezar a componer.</p>';
+                }
 
-            const handleAddSection = () => {
-                const sectionName = prompt("Nombre de la nueva sección (ej: Verso 1, Estribillo):");
-                if (!sectionName) return;
+                activeProject.sections.forEach(section => {
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.className = 'section-container';
+                    
+                    let measuresHtml = section.measures.map(m => `<div class="measure">${m}</div>`).join('');
+                    measuresHtml += `<button class="measure add-measure" onclick="addMeasure(${section.id})">+</button>`;
 
-                setProjects(projects.map(p => {
-                    if (p.id === activeProjectId) {
-                        return {
-                            ...p,
-                            sections: [...p.sections, { id: Date.now(), name: sectionName, measures: [] }]
-                        };
-                    }
-                    return p;
-                }));
-            };
-
-            const handleAddMeasure = (sectionId) => {
-                const chord = prompt("Ingresa el acorde para este compás (ej: G, Am, %):");
-                if (!chord) return;
-
-                setProjects(projects.map(p => {
-                    if (p.id === activeProjectId) {
-                        return {
-                            ...p,
-                            sections: p.sections.map(s => {
-                                if (s.id === sectionId) {
-                                    return { ...s, measures: [...s.measures, chord] };
-                                }
-                                return s;
-                            })
-                        };
-                    }
-                    return p;
-                }));
-            };
-
-            return (
-                <div style={{ display: 'flex', width: '100%' }}>
-                    {/* Barra Lateral */}
-                    <div className="sidebar">
-                        <div className="app-title">🎵 Priel Musical</div>
-                        <h3>PROYECTOS</h3>
-                        
-                        <div className="project-list">
-                            {projects.map(project => (
-                                <div 
-                                    key={project.id} 
-                                    className={`project-item ${project.id === activeProjectId ? 'active' : ''}`}
-                                    onClick={() => setActiveProjectId(project.id)}
-                                >
-                                    {project.name}
-                                </div>
-                            ))}
+                    sectionDiv.innerHTML = `
+                        <div class="section-header">
+                            <div class="section-title">${section.name}</div>
                         </div>
-
-                        <form className="add-project-form" onSubmit={handleAddProject}>
-                            <input 
-                                type="text" 
-                                className="input-text" 
-                                placeholder="Nuevo proyecto..." 
-                                value={newProjectName}
-                                onChange={(e) => setNewProjectName(e.target.value)}
-                            />
-                            <button type="submit" className="btn btn-primary">+</button>
-                        </form>
-                    </div>
-
-                    {/* Área Principal */}
-                    <div className="main">
-                        {activeProject ? (
-                            <>
-                                <h1>{activeProject.name}</h1>
-                                
-                                <div className="tabs">
-                                    <div className="tab">Pizarra</div>
-                                    <div className="tab active">Score</div>
-                                    <div className="tab">Entrenamiento</div>
-                                </div>
-
-                                <div style={{ marginBottom: '20px' }}>
-                                    <button className="btn" onClick={handleAddSection}>+ Agregar Sección</button>
-                                </div>
-
-                                {/* Renderizado de Secciones y Compases */}
-                                {activeProject.sections.map(section => (
-                                    <div key={section.id} className="section-container">
-                                        <div className="section-header">
-                                            <div className="section-title">{section.name}</div>
-                                        </div>
-                                        <div className="grid">
-                                            {section.measures.map((measure, index) => (
-                                                <div key={index} className="measure">{measure}</div>
-                                            ))}
-                                            <button 
-                                                className="measure add-measure"
-                                                onClick={() => handleAddMeasure(section.id)}
-                                            >
-                                                +
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                                
-                                {activeProject.sections.length === 0 && (
-                                    <p style={{ color: '#6c757d' }}>No hay secciones. Agrega una para empezar a componer.</p>
-                                )}
-                            </>
-                        ) : (
-                            <h2>Selecciona o crea un proyecto</h2>
-                        )}
-                    </div>
-                </div>
-            );
+                        <div class="grid">${measuresHtml}</div>
+                    `;
+                    sectionsContainerEl.appendChild(sectionDiv);
+                });
+            }
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // Eventos
+        addProjectForm.onsubmit = (e) => {
+            e.preventDefault();
+            const name = newProjectInput.value.trim();
+            if (!name) return;
+            
+            const newProject = { id: Date.now(), name, sections: [] };
+            projects.push(newProject);
+            activeProjectId = newProject.id;
+            newProjectInput.value = '';
+            render();
+        };
+
+        btnAddSection.onclick = () => {
+            const name = prompt("Nombre de la nueva sección (ej: Verso 1, Estribillo):");
+            if (!name) return;
+            
+            const activeProject = projects.find(p => p.id === activeProjectId);
+            activeProject.sections.push({ id: Date.now(), name, measures: [] });
+            render();
+        };
+
+        window.addMeasure = (sectionId) => {
+            const chord = prompt("Ingresa el acorde para este compás (ej: G, Am, %):");
+            if (!chord) return;
+            
+            const activeProject = projects.find(p => p.id === activeProjectId);
+            const section = activeProject.sections.find(s => s.id === sectionId);
+            if (section) {
+                section.measures.push(chord);
+            }
+            render();
+        };
+
+        // Renderizado inicial
+        render();
     </script>
 </body>
 </html>
