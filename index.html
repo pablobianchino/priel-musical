@@ -11,18 +11,44 @@
         .app-title { font-size: 18px; font-weight: bold; margin-bottom: 25px; color: #000; }
         
         .project-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .project-item { padding: 12px; background: #eee; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .project-item { padding: 12px; background: #eee; border-radius: 6px; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between;}
         .project-item.active { background: var(--accent); font-weight: bold; }
         
-        .main { flex: 1; padding: 30px; overflow-y: auto; }
-        .tabs { display: flex; gap: 20px; border-bottom: 1px solid #ddd; margin-bottom: 25px; }
+        .main { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
+        
+        .song-header { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .song-title { font-size: 2rem; font-weight: bold; margin: 0; }
+        .song-meta { display: flex; gap: 15px; }
+        .meta-input { padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        
+        .tabs { display: flex; gap: 20px; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
         .tab { padding: 10px 0; cursor: pointer; color: #666; border-bottom: 3px solid transparent; }
         .tab.active { border-color: var(--accent); color: #000; font-weight: bold; }
 
-        .section-container { margin-bottom: 35px; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
-        .section-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .toolbar { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #eee; }
+        .btn { padding: 8px 15px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; background: white; font-weight: 500; }
+        .btn:hover { background: #f0f0f0; }
+        .btn-add { background: var(--accent); border: none; }
+        
+        /* Pizarra */
+        .pizarra-container { display: none; flex: 1; flex-direction: column; }
+        .pizarra-container.active { display: flex; }
+        .editor { flex: 1; border: 1px solid #ccc; border-radius: 5px; padding: 15px; overflow-y: auto; min-height: 300px; outline: none; }
+        
+        /* Score */
+        .score-container { display: none; flex-direction: column; }
+        .score-container.active { display: flex; }
+        
+        .section-container { margin-bottom: 35px; padding: 15px; border-radius: 10px; border: 1px solid #eee; transition: background 0.3s; }
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .section-header-left { display: flex; align-items: center; gap: 15px; }
         .section-title { font-weight: bold; font-size: 1.1rem; }
-        .color-picker { border: none; width: 30px; height: 30px; cursor: pointer; background: none; }
+        .section-actions { display: flex; gap: 5px; }
+        .icon-btn { cursor: pointer; border: none; background: none; font-size: 1.1rem; opacity: 0.6; }
+        .icon-btn:hover { opacity: 1; }
+
+        .palette { display: flex; gap: 5px; }
+        .color-dot { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
         
@@ -31,11 +57,9 @@
             display: flex; align-items: center; justify-content: center; 
             font-size: 1.2rem; font-weight: bold; background: #fff; position: relative;
         }
-        .measure input { width: 80%; border: none; border-bottom: 2px solid var(--accent); outline: none; text-align: center; font-size: 1.1rem; }
+        .measure input { width: 60%; border: none; border-bottom: 2px solid var(--accent); outline: none; text-align: center; font-size: 1.1rem; }
         .save-btn { position: absolute; right: 5px; bottom: 5px; font-size: 12px; cursor: pointer; background: #4caf50; color: white; border: none; border-radius: 3px; }
-
-        .btn { padding: 8px 15px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; background: white; font-weight: 500; }
-        .btn-add { background: var(--accent); border: none; }
+        .del-btn { position: absolute; left: 5px; bottom: 5px; font-size: 12px; cursor: pointer; background: none; border: none; }
     </style>
 </head>
 <body>
@@ -46,60 +70,156 @@
         <button class="btn btn-add" onclick="addProject()" style="margin-top: 15px;">+ Nueva Canción</button>
     </div>
 
-    <div class="main">
-        <h1 id="project-name">Selecciona un proyecto</h1>
-        <div class="tabs">
-            <div class="tab">Pizarra</div>
-            <div class="tab active">Score</div>
+    <div class="main" id="main-content" style="display: none;">
+        
+        <div class="song-header">
+            <h1 class="song-title" id="project-name"></h1>
+            <div class="song-meta">
+                <input type="text" id="meta-singer" class="meta-input" placeholder="Cantante" onchange="updateMeta('singer', this.value)">
+                <input type="text" id="meta-key" class="meta-input" placeholder="Tonalidad (ej. Do)" onchange="updateMeta('key', this.value)">
+                <input type="text" id="meta-time" class="meta-input" placeholder="Compás (ej. 4/4)" onchange="updateMeta('time', this.value)">
+            </div>
         </div>
 
-        <button class="btn" onclick="addSection()" style="margin-bottom: 20px;">+ Sección</button>
-        <div id="sections-content"></div>
+        <div class="tabs">
+            <div class="tab" id="tab-pizarra" onclick="setTab('pizarra')">Pizarra</div>
+            <div class="tab" id="tab-score" onclick="setTab('score')">Score</div>
+        </div>
+
+        <div class="pizarra-container" id="pizarra-view">
+            <div class="toolbar">
+                <select onchange="formatDoc('formatBlock', this.value)">
+                    <option value="H1">Título 1</option>
+                    <option value="H2">Título 2</option>
+                    <option value="P" selected>Párrafo</option>
+                </select>
+                <select onchange="formatDoc('fontSize', this.value)">
+                    <option value="3">Normal</option>
+                    <option value="5">Grande</option>
+                    <option value="7">Muy Grande</option>
+                </select>
+                <input type="color" onchange="formatDoc('foreColor', this.value)" title="Color de letra">
+                <button class="btn" onclick="formatDoc('bold')"><b>B</b></button>
+                <button class="btn" onclick="formatDoc('italic')"><i>I</i></button>
+                <button class="btn" onclick="formatDoc('underline')"><u>U</u></button>
+            </div>
+            <div class="editor" id="rich-editor" contenteditable="true" onblur="savePizarra()"></div>
+        </div>
+
+        <div class="score-container" id="score-view">
+            <div class="toolbar">
+                <button class="btn btn-add" onclick="addSection()">+ Sección</button>
+                <div style="flex: 1;"></div>
+                <span style="font-weight: bold; font-size: 0.9em; color: #666;">Transpose:</span>
+                <button class="btn" onclick="transpose(-1)">-1</button>
+                <button class="btn" onclick="transpose(1)">+1</button>
+                <button class="btn" onclick="resetTranspose()">Restablecer</button>
+                <span id="transpose-badge" style="font-weight:bold; color:var(--accent); min-width: 30px;">0</span>
+            </div>
+            <div id="sections-content"></div>
+        </div>
+
     </div>
 
     <script>
-        let projects = [{ id: 1, name: "Demo", sections: [] }];
-        let activeId = 1;
+        const colors = ['#f8f9fa', '#ffcccc', '#ccffcc', '#ccccff', '#ffffcc', '#ffccff', '#ccffff'];
+        const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const flatToSharp = { 'Db':'C#', 'Eb':'D#', 'Gb':'F#', 'Ab':'G#', 'Bb':'A#' };
 
+        let projects = [];
+        let activeId = null;
+        let activeTab = 'score';
+
+        function init() {
+            addProject("Demo");
+        }
+
+        // --- Core y Renderizado ---
         function render() {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map(p => `
                 <div class="project-item ${p.id === activeId ? 'active' : ''}" onclick="selectProject(${p.id})">
-                    ${p.name}
+                    <span>${p.name}</span>
                 </div>
             `).join('');
 
             const project = projects.find(p => p.id === activeId);
-            if (!project) return;
+            const mainContent = document.getElementById('main-content');
+            
+            if (!project) {
+                mainContent.style.display = 'none';
+                return;
+            }
 
+            mainContent.style.display = 'flex';
             document.getElementById('project-name').textContent = project.name;
+            document.getElementById('meta-singer').value = project.meta.singer;
+            document.getElementById('meta-key').value = project.meta.key;
+            document.getElementById('meta-time').value = project.meta.time;
+            document.getElementById('transpose-badge').textContent = project.transposeOffset > 0 ? `+${project.transposeOffset}` : project.transposeOffset;
+
+            // Tabs
+            document.getElementById('tab-pizarra').classList.toggle('active', activeTab === 'pizarra');
+            document.getElementById('tab-score').classList.toggle('active', activeTab === 'score');
+            document.getElementById('pizarra-view').classList.toggle('active', activeTab === 'pizarra');
+            document.getElementById('score-view').classList.toggle('active', activeTab === 'score');
+
+            if (activeTab === 'pizarra') {
+                const editor = document.getElementById('rich-editor');
+                if (editor.innerHTML !== project.pizarra) editor.innerHTML = project.pizarra;
+            } else {
+                renderScore(project);
+            }
+        }
+
+        function renderScore(project) {
             const container = document.getElementById('sections-content');
-            container.innerHTML = project.sections.map(s => `
-                <div class="section-container" style="background-color: ${s.color}20; border-left: 5px solid ${s.color}">
+            container.innerHTML = project.sections.map((s, sIndex) => `
+                <div class="section-container" style="background-color: ${s.color}40; border-left: 5px solid ${s.color === '#f8f9fa' ? '#ccc' : s.color}">
                     <div class="section-header">
-                        <input type="color" class="color-picker" value="${s.color}" onchange="updateColor(${s.id}, this.value)">
-                        <span class="section-title">${s.name}</span>
+                        <div class="section-header-left">
+                            <div class="palette">
+                                ${colors.map(c => `<div class="color-dot" style="background:${c}" onclick="updateColor('${s.id}', '${c}')"></div>`).join('')}
+                            </div>
+                            <span class="section-title">${s.name}</span>
+                        </div>
+                        <div class="section-actions">
+                            <button class="icon-btn" onclick="renameSection('${s.id}')">✏️</button>
+                            <button class="icon-btn" onclick="duplicateSection('${s.id}')">📋</button>
+                            <button class="icon-btn" onclick="deleteSection('${s.id}')">🗑️</button>
+                        </div>
                     </div>
                     <div class="grid">
-                        ${s.measures.map((m, idx) => `
-                            <div class="measure" id="m-${s.id}-${idx}">
+                        ${s.measures.map((m, idx) => {
+                            let displayVal = calculateTransposedNote(m.originalVal, project.transposeOffset);
+                            return `
+                            <div class="measure">
                                 ${m.editing ? 
-                                    `<input type="text" id="in-${s.id}-${idx}" value="${m.val}" onkeypress="handleKey(event, ${s.id}, ${idx})">
-                                     <button class="save-btn" onclick="saveMeasure(${s.id}, ${idx})">✓</button>` : 
-                                    `<span onclick="editMeasure(${s.id}, ${idx})">${m.val || '...'}</span>`
+                                    `<input type="text" id="in-${s.id}-${idx}" value="${m.originalVal}" onkeydown="handleKey(event, '${s.id}', ${idx})">
+                                     <button class="del-btn" onclick="deleteMeasure('${s.id}', ${idx})">🗑️</button>
+                                     <button class="save-btn" onclick="saveMeasure('${s.id}', ${idx})">✓</button>` : 
+                                    `<span style="cursor:pointer; width:100%; text-align:center; height:100%; display:flex; align-items:center; justify-content:center;" onclick="editMeasure('${s.id}', ${idx})">${displayVal || '...'}</span>`
                                 }
                             </div>
-                        `).join('')}
-                        <div class="measure" style="border-style: dashed; cursor: pointer" onclick="addMeasure(${s.id})">+</div>
+                        `}).join('')}
+                        <div class="measure" style="border-style: dashed; cursor: pointer" onclick="addMeasure('${s.id}')">+</div>
                     </div>
                 </div>
             `).join('');
         }
 
-        function addProject() {
-            const name = prompt("Nombre de la canción:");
+        // --- Proyectos y Metadatos ---
+        function addProject(defaultName = null) {
+            const name = defaultName || prompt("Nombre de la canción:");
             if (name) {
-                const newP = { id: Date.now(), name, sections: [] };
+                const newP = { 
+                    id: Date.now(), 
+                    name, 
+                    meta: { singer: '', key: '', time: '' },
+                    pizarra: '',
+                    sections: [],
+                    transposeOffset: 0
+                };
                 projects.push(newP);
                 activeId = newP.id;
                 render();
@@ -107,48 +227,110 @@
         }
 
         function selectProject(id) { activeId = id; render(); }
+        function setTab(tab) { activeTab = tab; render(); }
+        function updateMeta(field, val) {
+            const p = projects.find(p => p.id === activeId);
+            if(p) p.meta[field] = val;
+        }
 
+        // --- Pizarra ---
+        function formatDoc(cmd, value=null) { document.execCommand(cmd, false, value); }
+        function savePizarra() {
+            const p = projects.find(p => p.id === activeId);
+            if(p) p.pizarra = document.getElementById('rich-editor').innerHTML;
+        }
+
+        // --- Secciones ---
         function addSection() {
             const name = prompt("Nombre de sección (Intro, Verso...):");
             if (!name) return;
-            const p = projects.find(p => p.id === activeId);
-            p.sections.push({ id: Date.now(), name, color: '#f8f9fa', measures: [] });
+            getProj().sections.push(createSection(name));
             render();
         }
-
-        function updateColor(secId, color) {
-            const p = projects.find(p => p.id === activeId);
-            const s = p.sections.find(s => s.id === secId);
-            s.color = color;
+        function createSection(name, color='#f8f9fa', measures=[]) {
+            return { id: 's' + Date.now() + Math.random(), name, color, measures: JSON.parse(JSON.stringify(measures)) };
+        }
+        function renameSection(id) {
+            const s = getSection(id);
+            const newName = prompt("Nuevo nombre:", s.name);
+            if (newName) { s.name = newName; render(); }
+        }
+        function duplicateSection(id) {
+            const p = getProj();
+            const s = getSection(id);
+            const idx = p.sections.findIndex(x => x.id === id);
+            p.sections.splice(idx + 1, 0, createSection(s.name + ' (Copia)', s.color, s.measures.map(m => ({...m, editing: false}))));
             render();
         }
+        function deleteSection(id) {
+            if(confirm("¿Eliminar sección?")) {
+                const p = getProj();
+                p.sections = p.sections.filter(x => x.id !== id);
+                render();
+            }
+        }
+        function updateColor(secId, color) { getSection(secId).color = color; render(); }
 
+        // --- Compases ---
         function addMeasure(secId) {
-            const p = projects.find(p => p.id === activeId);
-            const s = p.sections.find(s => s.id === secId);
-            s.measures.push({ val: '', editing: true });
+            const s = getSection(secId);
+            s.measures.push({ originalVal: '', editing: true });
             render();
-            document.getElementById(`in-${secId}-${s.measures.length - 1}`).focus();
+            setTimeout(() => document.getElementById(`in-${secId}-${s.measures.length - 1}`).focus(), 50);
         }
-
-        function editMeasure(secId, idx) {
-            const p = projects.find(p => p.id === activeId);
-            const s = p.sections.find(s => s.id === secId);
-            s.measures[idx].editing = true;
-            render();
-        }
-
+        function editMeasure(secId, idx) { getSection(secId).measures[idx].editing = true; render(); }
         function saveMeasure(secId, idx) {
-            const val = document.getElementById(`in-${secId}-${idx}`).value;
-            const p = projects.find(p => p.id === activeId);
-            const s = p.sections.find(s => s.id === secId);
-            s.measures[idx] = { val: val || '%', editing: false };
+            const input = document.getElementById(`in-${secId}-${idx}`);
+            if(!input) return;
+            const s = getSection(secId);
+            s.measures[idx] = { originalVal: input.value.trim() || '%', editing: false };
             render();
         }
-
+        function deleteMeasure(secId, idx) {
+            const s = getSection(secId);
+            s.measures.splice(idx, 1);
+            render();
+        }
         function handleKey(e, secId, idx) { if (e.key === 'Enter') saveMeasure(secId, idx); }
 
-        render();
+        // --- Transposición ---
+        function transpose(steps) {
+            const p = getProj();
+            p.transposeOffset += steps;
+            render();
+        }
+        function resetTranspose() {
+            getProj().transposeOffset = 0;
+            render();
+        }
+        function calculateTransposedNote(chord, offset) {
+            if (!chord || chord === '%') return chord;
+            if (offset === 0) return chord;
+
+            // Extrae la nota base y el resto (ej. Am7 -> A y m7)
+            const match = chord.match(/^([CDEFGAB][#b]?)(.*)$/i);
+            if (!match) return chord;
+
+            let root = match[1];
+            let suffix = match[2];
+            
+            root = root.charAt(0).toUpperCase() + root.slice(1);
+            root = flatToSharp[root] || root;
+
+            let idx = notes.indexOf(root);
+            if (idx === -1) return chord;
+
+            let newIdx = (idx + offset) % 12;
+            if (newIdx < 0) newIdx += 12;
+
+            return notes[newIdx] + suffix;
+        }
+
+        // Utils
+        function getProj() { return projects.find(p => p.id === activeId); }
+        function getSection(id) { return getProj().sections.find(s => s.id === id); }
+
+        init();
     </script>
 </body>
 </html>
