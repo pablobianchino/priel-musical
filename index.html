@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <title>Priel Musical</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         :root { --accent: #ffc107; --border-radius: 20px; }
         body { display: flex; height: 100vh; margin: 0; font-family: system-ui, sans-serif; background: #fff; color: #333; }
         
-        /* Layout Principal y Sidebar */
         .sidebar { width: 260px; background: #f8f9fa; padding: 20px; border-right: 1px solid #e9ecef; display: flex; flex-direction: column; gap: 15px; position: relative; }
         .app-title { font-size: 20px; font-weight: bold; color: #000; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         
@@ -26,50 +24,41 @@
         
         .main { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
         
-        /* Cabecera, Título Editable y Botones Redondeados */
         .song-header { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
         .song-title-row { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .song-title { font-size: 1.8rem; font-weight: bold; margin: 0; outline: none; border-bottom: 2px solid transparent; }
         .song-title[contenteditable="true"]:focus { border-color: var(--accent); }
         
         .top-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .btn-pill { 
-            padding: 6px 16px; border: 1px solid #ccc; border-radius: var(--border-radius); 
-            background: white; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; outline: none;
-        }
+        .btn-pill { padding: 6px 16px; border: 1px solid #ccc; border-radius: var(--border-radius); background: white; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; outline: none; }
         .btn-pill:hover { background: #f0f0f0; }
         
-        /* Menú desplegable Plantillas */
         .dropdown { position: relative; display: inline-block; }
-        .dropdown-content { 
-            display: none; position: absolute; background-color: #fff; min-width: 200px; 
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 1; border-radius: 10px; border: 1px solid #eee; top: 100%; left: 0; margin-top: 5px;
-        }
+        .dropdown-content { display: none; position: absolute; background-color: #fff; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 1; border-radius: 10px; border: 1px solid #eee; top: 100%; left: 0; margin-top: 5px; }
         .dropdown-content div { color: black; padding: 12px 16px; text-decoration: none; display: block; cursor: pointer; border-bottom: 1px solid #eee; }
         .dropdown-content div:hover { background-color: #f1f1f1; }
         .dropdown-content div span { display: block; font-size: 0.8em; color: #666; margin-top: 3px; }
         .dropdown:hover .dropdown-content { display: block; }
 
-        /* Metadatos */
         .song-meta { display: flex; gap: 15px; margin-top: 5px; }
         .meta-input, .meta-select { padding: 6px 12px; border: 1px solid #ccc; border-radius: 10px; background: white; outline: none; }
         
-        /* Pestañas */
         .tabs { display: flex; gap: 20px; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
         .tab { padding: 10px 0; cursor: pointer; color: #666; border-bottom: 3px solid transparent; }
         .tab.active { border-color: var(--accent); color: #000; font-weight: bold; }
 
-        /* Vistas */
         .pizarra-container, .score-container { display: none; flex-direction: column; flex: 1; }
         .pizarra-container.active, .score-container.active { display: flex; }
         
         .editor { flex: 1; border: 1px solid #ccc; border-radius: 10px; padding: 15px; min-height: 300px; outline: none; }
         
-        /* Score y Compases */
         .score-actions { margin-bottom: 15px; display: flex; gap: 10px; }
         .section-container { margin-bottom: 35px; border-radius: 15px; border: 1px solid #eee; background: transparent; }
+        .section-container.collapsed { margin-bottom: 15px; border: none; padding-bottom: 0; }
         .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 15px 15px 0 15px; }
-        .section-header-left { display: flex; align-items: center; gap: 15px; position: relative; }
+        .section-header-left { display: flex; align-items: center; gap: 10px; position: relative; }
+        .collapse-icon { cursor: pointer; color: #999; font-size: 1.2rem; width: 15px; text-align: center; user-select: none; }
+        .collapse-icon:hover { color: #000; }
         .palette { display: flex; gap: 5px; margin-right: 15px; }
         .color-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; padding: 0 15px 15px 15px; }
@@ -80,19 +69,16 @@
         .save-btn { background: #4caf50; color: white; }
         .del-btn { background: none; }
         
-        /* Símbolos de Compás */
         .symbol { font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #555; display: inline-block; }
         .check-pill { display: flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 10px; background: transparent; cursor: pointer; font-size: 0.8rem; }
         .check-pill.active { background: var(--accent); font-weight: bold; }
         .check-pill input { display: none; }
 
-        /* Panel de Controles de Sección */
-        .section-controls-panel { display: none; position: absolute; background-color: #fff; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 10; border-radius: 10px; border: 1px solid #eee; padding: 15px; gap: 15px; flex-direction: column; top: 100%; left: 0; margin-top: 5px; }
+        .section-controls-panel { display: none; position: absolute; background-color: #fff; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 10; border-radius: 10px; border: 1px solid #eee; padding: 15px; gap: 15px; flex-direction: column; top: 100%; left: 25px; margin-top: 5px; }
         .section-controls-panel.active { display: flex; }
         .controls-row { display: flex; align-items: center; justify-content: space-between; }
         .repeat-counter { display: flex; align-items: center; gap: 5px; font-weight: bold; color: var(--accent); }
 
-        /* Modal Presentación */
         #presentation-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f4f4; z-index: 1000; overflow-y: auto; padding: 40px; box-sizing: border-box; }
         .presentation-content { max-width: 800px; margin: 0 auto; background: white; padding: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 10px; }
         .close-modal { position: absolute; top: 20px; right: 40px; padding: 8px 16px; border-radius: var(--border-radius); border: 1px solid #ccc; background: white; cursor: pointer; font-weight: bold; }
@@ -108,16 +94,10 @@
 
     <div class="sidebar">
         <div class="app-title">🎵 Priel Musical</div>
-        
         <input type="text" id="search-input" class="search-box" placeholder="🔍 Buscar canciones..." onkeyup="filterProjects()">
-        
         <div class="sidebar-header">⌄ CANCIONES</div>
-        
         <div class="project-list" id="project-list"></div>
-        
-        <div class="add-project-link" onclick="addProject()">
-            <span>⊕</span> Canción nueva
-        </div>
+        <div class="add-project-link" onclick="addProject()"><span>⊕</span> Canción nueva</div>
     </div>
 
     <div class="main" id="main-content" style="display: none;">
@@ -138,14 +118,8 @@
                 <div class="dropdown">
                     <button class="btn-pill">⚏ Plantillas</button>
                     <div class="dropdown-content">
-                        <div onclick="applyTemplate('simple')">
-                            Canción simple
-                            <span>Intro → Verso → Coro → Outro</span>
-                        </div>
-                        <div onclick="applyTemplate('completa')">
-                            Canción completa
-                            <span>Intro → Verso 1 → Pre-Coro → Coro → Verso 2...</span>
-                        </div>
+                        <div onclick="applyTemplate('simple')">Canción simple<span>Intro → Verso → Coro → Outro</span></div>
+                        <div onclick="applyTemplate('completa')">Canción completa<span>Intro → Verso 1 → Pre-Coro → Coro...</span></div>
                     </div>
                 </div>
 
@@ -155,9 +129,7 @@
 
             <div class="song-meta">
                 <input type="text" id="meta-singer" class="meta-input" placeholder="Cantante" onchange="updateMeta('singer', this.value)">
-                <select id="meta-key" class="meta-select" onchange="updateMeta('key', this.value)">
-                    <option value="">Tonalidad</option>
-                </select>
+                <select id="meta-key" class="meta-select" onchange="updateMeta('key', this.value)"><option value="">Tonalidad</option></select>
                 <input type="text" id="meta-time" class="meta-input" placeholder="Compás (ej. 4/4)" onchange="updateMeta('time', this.value)">
             </div>
         </div>
@@ -170,8 +142,7 @@
         <div class="pizarra-container" id="pizarra-view">
             <div class="top-toolbar" style="margin-bottom: 10px; background: #f8f9fa; padding: 10px; border-radius: 10px;">
                 <select class="meta-select" onchange="formatDoc('fontSize', this.value)">
-                    <option value="3">Normal</option>
-                    <option value="5">Grande</option>
+                    <option value="3">Normal</option><option value="5">Grande</option>
                 </select>
                 <input type="color" onchange="formatDoc('foreColor', this.value)">
                 <button class="btn-pill" onclick="formatDoc('bold')">B</button>
@@ -190,8 +161,7 @@
 
     <div id="presentation-modal">
         <button class="close-modal" onclick="closePresentation()">Cerrar</button>
-        <div class="presentation-content" id="print-area">
-            </div>
+        <div class="presentation-content" id="print-area"></div>
     </div>
 
     <script>
@@ -199,17 +169,10 @@
         const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         const flatToSharp = { 'Db':'C#', 'Eb':'D#', 'Gb':'F#', 'Ab':'G#', 'Bb':'A#' };
 
-        // --- Supabase Configuración (Marcador de posición) ---
-        const SUPABASE_URL = 'TU_SUPABASE_URL';
-        const SUPABASE_KEY = 'TU_SUPABASE_KEY';
-        const { createClient } = supabase;
-        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-
         let projects = [];
         let activeId = null;
         let activeTab = 'score';
 
-        // --- Inicialización y Carga de Supabase ---
         async function init() {
             const keySelect = document.getElementById('meta-key');
             notes.forEach(n => {
@@ -219,29 +182,45 @@
         }
 
         async function loadProjects() {
-            // Lógica de Supabase: cargar proyectos, secciones y compases, guardado automático.
-            // Para simplificar, cargaré un demo si Supabase no está configurado.
-            if(SUPABASE_URL === 'TU_SUPABASE_URL') {
+            // Ejemplo de fetch a Vercel Serverless Function (comentado)
+            /*
+            try {
+                const res = await fetch('/api/projects');
+                const data = await res.json();
+                projects = data;
+                activeId = projects.length > 0 ? projects[0].id : null;
+            } catch (err) {
+                console.error("Error cargando BD", err);
+            }
+            */
+            
+            // Fallback Local (memoria) mientras conectas Neon
+            if(projects.length === 0) {
                 projects = [{ id: 1, name: "Demo: Can't Get You Off My Mind", meta: { singer: 'Lenny Kravitz', key: 'Gm', time: '4/4' }, pizarra: '', sections: [
                     { id: 's1', name: 'Intro', color: '#e3f2fd', repeat_count: 1, collapsed: false, measures: [
                         {originalVal: '||:G', editing: false}, {originalVal: '%', editing: false}, {originalVal: 'Am', editing: false}, {originalVal: '%:||', editing: false}
                     ]}
                 ], transposeOffset: 0 }];
                 activeId = 1;
-                render();
-                return;
             }
-
-            // Implementar lógica de Supabase aquí...
-        }
-
-        // --- Manejo de Datos (JS Local y Supabase) ---
-        async function handleProjectData(type, id, data) {
-            // Implementar lógica de Supabase genérica aquí...
             render();
         }
 
-        // --- Interfaz de Canción ---
+        async function saveState() {
+            render(); // Actualiza UI inmediatamente
+            
+            // Ejemplo de fetch para guardar en backend (Neon vía Vercel API)
+            /*
+            if(activeId) {
+                await fetch('/api/projects/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(getProj())
+                });
+            }
+            */
+        }
+
         function filterProjects() {
             const term = document.getElementById('search-input').value.toLowerCase();
             const items = document.querySelectorAll('.project-item');
@@ -253,22 +232,17 @@
 
         function handleTitleKey(e, el) { if (e.key === 'Enter') el.blur(); }
 
-        async function saveProjectName(el) {
+        function saveProjectName(el) {
             const p = getProj();
             const newName = el.textContent.trim();
-            if(p && newName !== p.name) {
-                p.name = newName;
-                // Implementar Supabase: update_project_name(p.id, p.name)
-                render();
-            }
+            if(p && newName !== p.name) { p.name = newName; saveState(); }
         }
 
-        async function deleteProjectHandler(id) {
-            if(confirm("¿Estás seguro de que quieres eliminar esta canción?")) {
+        function deleteProjectHandler(id) {
+            if(confirm("¿Eliminar esta canción?")) {
                 projects = projects.filter(x => x.id !== id);
-                if(activeId === id) activeId = null;
-                // Implementar Supabase: delete_project(id)
-                render();
+                if(activeId === id) activeId = projects.length ? projects[0].id : null;
+                saveState();
             }
         }
 
@@ -281,16 +255,19 @@
                 </div>
             `).join('');
             
-            filterProjects(); // Mantiene el filtro si se re-renderiza
+            filterProjects();
 
             const project = getProj();
-            if (!project) return;
+            if (!project) {
+                document.getElementById('main-content').style.display = 'none';
+                return;
+            }
 
             document.getElementById('main-content').style.display = 'flex';
             document.getElementById('project-name').textContent = project.name;
-            document.getElementById('meta-singer').value = project.meta.singer;
-            document.getElementById('meta-key').value = project.meta.key;
-            document.getElementById('meta-time').value = project.meta.time;
+            document.getElementById('meta-singer').value = project.meta.singer || '';
+            document.getElementById('meta-key').value = project.meta.key || '';
+            document.getElementById('meta-time').value = project.meta.time || '';
             
             let tBadge = project.transposeOffset > 0 ? `+${project.transposeOffset}` : project.transposeOffset;
             document.getElementById('transpose-badge').textContent = tBadge;
@@ -306,11 +283,13 @@
             } else {
                 const container = document.getElementById('sections-content');
                 container.innerHTML = project.sections.map(s => `
-                    <div class="section-container ${s.collapsed ? 'collapsed' : ''}" id="sec-${s.id}" style="border-left:5px solid ${s.color === '#f8f9fa' ? '#ccc' : s.color}">
-                        <div class="section-header">
+                    <div class="section-container ${s.collapsed ? 'collapsed' : ''}" id="sec-${s.id}" style="${s.collapsed ? '' : `border-left:5px solid ${s.color === '#f8f9fa' ? '#ccc' : s.color}`}">
+                        <div class="section-header" style="${s.collapsed ? 'padding: 0;' : ''}">
                             <div class="section-header-left">
-                                <div class="color-dot" style="background:${s.color}" onclick="toggleSectionCollapse('${s.id}')"></div>
+                                <span class="collapse-icon" onclick="toggleSectionCollapse('${s.id}')">${s.collapsed ? '›' : '⌄'}</span>
+                                <div class="color-dot" style="background:${s.color}" onclick="showSectionControls('${s.id}')"></div>
                                 ${!s.collapsed ? `<span style="font-weight:bold">${s.name} ${s.repeat_count > 1 ? `x${s.repeat_count}` : ''}</span>` : ''}
+                                
                                 <div class="section-controls-panel" id="controls-${s.id}">
                                     <div class="controls-row">
                                         <div class="palette">
@@ -332,7 +311,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="grid">
+                        <div class="grid" style="${s.collapsed ? 'display: none;' : ''}">
                             ${s.measures.map((m, idx) => {
                                 let val = m.editing ? m.originalVal : processTransposition(m.originalVal, project.transposeOffset);
                                 return `
@@ -364,7 +343,6 @@
             }
         }
 
-        // --- Transposición ---
         function processTransposition(input, offset) {
             if (!input || input === '%' || offset === 0) return input;
             return input.split(' ').map(chord => transposeChord(chord, offset)).join(' ');
@@ -382,45 +360,24 @@
             return notes[newIdx] + match[2];
         }
 
-        function transpose(steps) { getProj().transposeOffset += steps; render(); }
-        function resetTranspose() { getProj().transposeOffset = 0; render(); }
+        function transpose(steps) { getProj().transposeOffset += steps; saveState(); }
+        function resetTranspose() { getProj().transposeOffset = 0; saveState(); }
 
-        // --- Plantillas ---
         function applyTemplate(type) {
             const p = getProj();
-            if (p.sections.length > 0 && !confirm("Esto reemplazará la estructura actual. ¿Continuar?")) return;
-            
+            if (p.sections.length > 0 && !confirm("Reemplazará la estructura actual. ¿Continuar?")) return;
             p.sections = [];
-            const createSec = (name) => ({ id: 's'+Date.now()+Math.random(), name, color: '#f8f9fa', repeat_count: 1, collapsed: false, measures: [
-                {originalVal: '', editing: false}, {originalVal: '%', editing: false}, {originalVal: '', editing: false}, {originalVal: '%', editing: false}
-            ]});
-
-            if (type === 'simple') {
-                ['Intro', 'Verso', 'Coro', 'Outro'].forEach(n => p.sections.push(createSec(n)));
-            } else if (type === 'completa') {
-                ['Intro', 'Verso 1', 'Pre-Coro', 'Coro', 'Verso 2', 'Coro', 'Puente', 'Coro', 'Outro'].forEach(n => p.sections.push(createSec(n)));
-            }
-            render();
+            const createSec = (name) => ({ id: 's'+Date.now()+Math.random(), name, color: '#f8f9fa', repeat_count: 1, collapsed: false, measures: [{originalVal: '', editing: false}, {originalVal: '%', editing: false}, {originalVal: '', editing: false}, {originalVal: '%', editing: false}]});
+            if (type === 'simple') ['Intro', 'Verso', 'Coro', 'Outro'].forEach(n => p.sections.push(createSec(n)));
+            else if (type === 'completa') ['Intro', 'Verso 1', 'Pre-Coro', 'Coro', 'Verso 2', 'Coro', 'Puente', 'Coro', 'Outro'].forEach(n => p.sections.push(createSec(n)));
+            saveState();
         }
 
-        // --- Presentación y PDF ---
         function generatePresentationHTML() {
             const p = getProj();
-            let html = `
-                <h1 style="text-align: center; margin-bottom: 5px;">${p.name}</h1>
-                <div style="text-align: center; margin-bottom: 30px; font-size: 14px; color: #555;">
-                    ${p.meta.singer ? `<span>Artista: <b>${p.meta.singer}</b></span> | ` : ''}
-                    ${p.meta.key ? `<span>Tonalidad: <b>${p.meta.key}</b></span> | ` : ''}
-                    ${p.meta.time ? `<span>Compás: <b>${p.meta.time}</b></span>` : ''}
-                </div>
-            `;
-            
+            let html = `<h1 style="text-align: center; margin-bottom: 5px;">${p.name}</h1><div style="text-align: center; margin-bottom: 30px; font-size: 14px; color: #555;">${p.meta.singer ? `<span>Artista: <b>${p.meta.singer}</b></span> | ` : ''}${p.meta.key ? `<span>Tonalidad: <b>${p.meta.key}</b></span> | ` : ''}${p.meta.time ? `<span>Compás: <b>${p.meta.time}</b></span>` : ''}</div>`;
             p.sections.forEach(s => {
-                html += `
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px;">${s.name} ${s.repeat_count > 1 ? `x${s.repeat_count}` : ''}</h3>
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-                `;
+                html += `<div style="margin-bottom: 20px;"><h3 style="margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px;">${s.name} ${s.repeat_count > 1 ? `x${s.repeat_count}` : ''}</h3><div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">`;
                 s.measures.forEach(m => {
                     let val = processTransposition(m.originalVal, p.transposeOffset) || ' ';
                     html += `<div style="border: 1px solid #000; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; border-radius: 5px;">${val}</div>`;
@@ -430,34 +387,16 @@
             return html;
         }
 
-        function openPresentation() {
-            document.getElementById('print-area').innerHTML = generatePresentationHTML();
-            document.getElementById('presentation-modal').style.display = 'block';
-        }
-
+        function openPresentation() { document.getElementById('print-area').innerHTML = generatePresentationHTML(); document.getElementById('presentation-modal').style.display = 'block'; }
         function closePresentation() { document.getElementById('presentation-modal').style.display = 'none'; }
-
         function downloadPDF() {
             const printArea = document.getElementById('print-area');
             printArea.innerHTML = generatePresentationHTML();
-            
-            const opt = {
-                margin:       10,
-                filename:     `${getProj().name}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            
+            const opt = { margin: 10, filename: `${getProj().name}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
             printArea.style.display = 'block';
-            html2pdf().set(opt).from(printArea).save().then(() => {
-                if (document.getElementById('presentation-modal').style.display === 'none') {
-                    printArea.innerHTML = '';
-                }
-            });
+            html2pdf().set(opt).from(printArea).save().then(() => { if (document.getElementById('presentation-modal').style.display === 'none') printArea.innerHTML = ''; });
         }
 
-        // --- Utilidades generales ---
         function setTab(tab) { activeTab = tab; render(); }
         function selectProject(id) { activeId = id; render(); }
         function addProject(name = null) {
@@ -465,149 +404,48 @@
             if (n) {
                 projects.push({ id: Date.now(), name: n, meta: { singer: '', key: '', time: '' }, pizarra: '', sections: [], transposeOffset: 0 });
                 activeId = projects[projects.length - 1].id;
-                // Implementar Supabase: insert_project(p)
-                render();
+                saveState();
             }
         }
-        function updateMeta(field, val) { getProj().meta[field] = val; /* Implementar Supabase: update_project_meta(p.id, p.meta) */ }
-        function savePizarra() { getProj().pizarra = document.getElementById('rich-editor').innerHTML; /* Implementar Supabase: update_pizarra(p.id, p.pizarra) */ }
+        function updateMeta(field, val) { getProj().meta[field] = val; saveState(); }
+        function savePizarra() { getProj().pizarra = document.getElementById('rich-editor').innerHTML; saveState(); }
         function formatDoc(cmd, val = null) { document.execCommand(cmd, false, val); }
-        
+
         function addSection() {
             const name = prompt("Nombre (Intro, Verso...):");
-            if (name) { getProj().sections.push({ id: 's'+Date.now(), name, color: '#f8f9fa', repeat_count: 1, collapsed: false, measures: [] }); render(); }
+            if (name) { getProj().sections.push({ id: 's'+Date.now(), name, color: '#f8f9fa', repeat_count: 1, collapsed: false, measures: [] }); saveState(); }
         }
         function duplicateSection(id) {
             const s = getSection(id);
             getProj().sections.push({...s, id: 's'+Date.now(), measures: JSON.parse(JSON.stringify(s.measures)).map(m => ({...m, editing: false}))});
-            render();
+            saveState();
         }
-        function deleteSection(id) { if(confirm("¿Borrar sección?")) { getProj().sections = getProj().sections.filter(x => x.id !== id); render(); } }
-        function updateColor(sid, c) { getSection(sid).color = c; render(); }
+        function deleteSection(id) { if(confirm("¿Borrar sección?")) { getProj().sections = getProj().sections.filter(x => x.id !== id); saveState(); } }
+        function updateColor(sid, c) { getSection(sid).color = c; saveState(); }
         
-        function toggleSectionCollapse(id) {
-            const s = getSection(id);
-            if(s.collapsed) {
-                s.collapsed = false;
-                render();
-            } else {
-                // Al colapsar, ocultar el panel de controles también
-                document.getElementById(`controls-${id}`).classList.remove('active');
-                s.collapsed = true;
-                render();
-            }
-        }
+        function toggleSectionCollapse(id) { const s = getSection(id); s.collapsed = !s.collapsed; saveState(); }
+        function showSectionControls(sid) { document.getElementById(`controls-${sid}`).classList.toggle('active'); }
 
-        // Panel de Controles
-        function getSectionHeader(sid) { return document.getElementById(`sec-${sid}`).querySelector('.section-header-left'); }
-        
         window.addEventListener('click', (e) => {
             if(!e.target.matches('.color-dot') && !e.target.closest('.section-controls-panel')) {
                 document.querySelectorAll('.section-controls-panel').forEach(p => p.classList.remove('active'));
             }
         });
 
-        function changeRepeat(sid, steps) {
-            const s = getSection(sid);
-            if(s) {
-                s.repeat_count = Math.max(1, s.repeat_count + steps);
-                render();
-                // Persistencia automática Supabase...
-            }
-        }
-
-        // --- Compases y Símbolos ---
+        function changeRepeat(sid, steps) { const s = getSection(sid); if(s) { s.repeat_count = Math.max(1, s.repeat_count + steps); saveState(); } }
         function addMeasure(sid) { getSection(sid).measures.push({ originalVal: '', editing: true }); render(); }
         function editMeasure(sid, idx) { getSection(sid).measures[idx].editing = true; render(); }
-        function saveMeasure(sid, idx) { 
-            const val = document.getElementById(`in-${sid}-${idx}`).value.trim();
-            getSection(sid).measures[idx] = { originalVal: val || '%', editing: false };
-            render();
-        }
-        function deleteMeasure(sid, idx) { getSection(sid).measures.splice(idx, 1); render(); }
+        function saveMeasure(sid, idx) { getSection(sid).measures[idx] = { originalVal: document.getElementById(`in-${sid}-${idx}`).value.trim() || '%', editing: false }; saveState(); }
+        function deleteMeasure(sid, idx) { getSection(sid).measures.splice(idx, 1); saveState(); }
         function handleKey(e, sid, idx) { if (e.key === 'Enter') saveMeasure(sid, idx); }
-        
         function toggleSymbol(sid, idx, type) {
             const input = document.getElementById(`in-${sid}-${idx}`);
             let val = input.value;
-            if(type === 'start') {
-                val = val.startsWith('||:') ? val.replace('||:', '') : '||:' + val;
-            } else if(type === 'end') {
-                val = val.endsWith(':||') ? val.replace(':||', '') : val + ':||';
-            }
+            if(type === 'start') val = val.startsWith('||:') ? val.replace('||:', '') : '||:' + val;
+            else if(type === 'end') val = val.endsWith(':||') ? val.replace(':||', '') : val + ':||';
             input.value = val;
-            render(); // Rerenderiza solo los controles de edición para reflejar el estado activo
+            input.nextElementSibling.innerHTML = `<label class="check-pill ${val.startsWith('||:') ? 'active' : ''}"><input type="checkbox" onchange="toggleSymbol('${sid}', ${idx}, 'start')"> ||:</label><label class="check-pill ${val.endsWith(':||') ? 'active' : ''}"><input type="checkbox" onchange="toggleSymbol('${sid}', ${idx}, 'end')"> :||</label><button class="save-btn" onclick="saveMeasure('${sid}', ${idx})">✓</button><button class="del-btn" onclick="deleteMeasure('${sid}', ${idx})">🗑️</button>`;
         }
-
-        // Panel de Controles
-        function showSectionControls(sid) {
-            const panel = document.getElementById(`controls-${sid}`);
-            if(panel) panel.classList.toggle('active');
-        }
-        
-        // Sobreescribir renderScore para añadir el controlador del panel de controles
-        function renderScore(project) {
-            const container = document.getElementById('sections-content');
-            container.innerHTML = project.sections.map((s, sIndex) => `
-                <div class="section-container ${s.collapsed ? 'collapsed' : ''}" id="sec-${s.id}" style="border-left:5px solid ${s.color === '#f8f9fa' ? '#ccc' : s.color}">
-                    <div class="section-header">
-                        <div class="section-header-left">
-                            <div class="color-dot" style="background:${s.color}" onclick="toggleSectionCollapse('${s.id}')"></div>
-                            ${!s.collapsed ? `<span style="font-weight:bold">${s.name} ${s.repeat_count > 1 ? `x${s.repeat_count}` : ''}</span>` : ''}
-                            <button class="icon-btn" style="opacity:1" onclick="showSectionControls('${s.id}')">...</button>
-                            <div class="section-controls-panel" id="controls-${s.id}">
-                                <div class="controls-row">
-                                    <div class="palette">
-                                        ${colors.map(c => `<div class="color-dot" style="background:${c}" onclick="updateColor('${s.id}', '${c}')"></div>`).join('')}
-                                    </div>
-                                </div>
-                                <div class="controls-row">
-                                    <div class="repeat-counter">
-                                        <span>Repetir:</span>
-                                        <button class="btn-pill" style="padding:2px 8px" onclick="changeRepeat('${s.id}', -1)">-</button>
-                                        <span style="font-weight:bold">${s.repeat_count > 1 ? `x${s.repeat_count}` : 'x1'}</span>
-                                        <button class="btn-pill" style="padding:2px 8px" onclick="changeRepeat('${s.id}', 1)">+</button>
-                                    </div>
-                                    <div style="display:flex; gap:5px;">
-                                        <button class="btn-pill" style="padding:2px 8px" onclick="duplicateSection('${s.id}')">📋</button>
-                                        <button class="btn-pill" style="padding:2px 8px" onclick="deleteSection('${s.id}')">🗑️</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="grid">
-                        ${s.measures.map((m, idx) => {
-                            let val = m.editing ? m.originalVal : processTransposition(m.originalVal, project.transposeOffset);
-                            return `
-                            <div class="measure">
-                                ${m.editing ? 
-                                    `<input type="text" id="in-${s.id}-${idx}" value="${val}" onkeydown="handleKey(event, '${s.id}', ${idx})">
-                                     <div class="edit-controls">
-                                         <label class="check-pill ${val.startsWith('||:') ? 'active' : ''}">
-                                             <input type="checkbox" onchange="toggleSymbol('${s.id}', ${idx}, 'start')"> ||:
-                                         </label>
-                                         <label class="check-pill ${val.endsWith(':||') ? 'active' : ''}">
-                                             <input type="checkbox" onchange="toggleSymbol('${s.id}', ${idx}, 'end')"> :||
-                                         </label>
-                                         <button class="save-btn" onclick="saveMeasure('${s.id}', ${idx})">✓</button>
-                                         <button class="del-btn" onclick="deleteMeasure('${s.id}', ${idx})">🗑️</button>
-                                     </div>` : 
-                                    `<span style="width:100%; text-align:center; cursor:pointer; display: flex; align-items: center; justify-content: space-between; padding: 0 5px;" onclick="editMeasure('${s.id}', ${idx})">
-                                        ${val.startsWith('||:') ? '<span class="symbol">||:</span>' : '<span></span>'}
-                                        ${val.replace('||:', '').replace(':||', '') || '...'}
-                                        ${val.endsWith(':||') ? '<span class="symbol">:||</span>' : '<span></span>'}
-                                     </span>`
-                                }
-                            </div>
-                        `}).join('')}
-                        <div class="measure" style="border-style:dashed; cursor:pointer; background: transparent;" onclick="addMeasure('${s.id}')">+</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Reubicar la función showSectionControls después de redefinir renderScore
 
         function getProj() { return projects.find(p => p.id === activeId); }
         function getSection(id) { return getProj().sections.find(s => s.id === id); }
