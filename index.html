@@ -8,93 +8,67 @@
         :root { --accent: #ffc107; --border-radius: 20px; }
         body { display: flex; height: 100vh; margin: 0; font-family: system-ui, sans-serif; background: #fff; color: #333; }
         
+        /* Sidebar */
         .sidebar { width: 260px; background: #f8f9fa; padding: 20px; border-right: 1px solid #e9ecef; display: flex; flex-direction: column; gap: 15px; position: relative; }
         .app-title { font-size: 20px; font-weight: bold; color: #000; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-        
         .search-box { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; box-sizing: border-box; font-size: 0.9rem; background: white; }
         .sidebar-header { font-size: 0.8rem; color: #666; font-weight: bold; display: flex; align-items: center; gap: 5px; margin-top: 5px; }
-        
         .project-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
         .project-item { padding: 10px 15px; background: transparent; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 0.95rem; display: flex; align-items: center; justify-content: space-between; }
         .project-item:hover { background: #e9ecef; }
         .project-item.active { background: var(--accent); font-weight: bold; color: #000; }
-        
-        .project-item .del-btn { display: none; }
+        .project-item .del-btn { display: none; background: none; border: none; cursor: pointer; font-size: 1.1rem; }
         .project-item:hover .del-btn { display: block; }
-        
         .add-project-link { padding: 10px 15px; cursor: pointer; color: #555; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; margin-top: auto; }
         .add-project-link:hover { color: #000; font-weight: 500; }
-        
+
+        /* Main Content */
         .main { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
-        
         .song-header { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
         .song-title-row { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .song-title { font-size: 1.8rem; font-weight: bold; margin: 0; outline: none; border-bottom: 2px solid transparent; }
         .song-title[contenteditable="true"]:focus { border-color: var(--accent); }
-        
         .top-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .btn-pill { padding: 6px 16px; border: 1px solid #ccc; border-radius: var(--border-radius); background: white; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; outline: none; }
         .btn-pill:hover { background: #f0f0f0; }
-        
-        .dropdown { position: relative; display: inline-block; }
-        .dropdown-content { display: none; position: absolute; background-color: #fff; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 1; border-radius: 10px; border: 1px solid #eee; top: 100%; left: 0; margin-top: 5px; }
-        .dropdown-content div { color: black; padding: 12px 16px; text-decoration: none; display: block; cursor: pointer; border-bottom: 1px solid #eee; }
-        .dropdown-content div:hover { background-color: #f1f1f1; }
-        .dropdown-content div span { display: block; font-size: 0.8em; color: #666; margin-top: 3px; }
-        .dropdown:hover .dropdown-content { display: block; }
-
         .song-meta { display: flex; gap: 15px; margin-top: 5px; }
         .meta-input, .meta-select { padding: 6px 12px; border: 1px solid #ccc; border-radius: 10px; background: white; outline: none; }
-        
+
+        /* Tabs */
         .tabs { display: flex; gap: 20px; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
         .tab { padding: 10px 0; cursor: pointer; color: #666; border-bottom: 3px solid transparent; }
         .tab.active { border-color: var(--accent); color: #000; font-weight: bold; }
 
+        /* Views */
         .pizarra-container, .score-container { display: none; flex-direction: column; flex: 1; }
         .pizarra-container.active, .score-container.active { display: flex; }
-        
         .editor { flex: 1; border: 1px solid #ccc; border-radius: 10px; padding: 15px; min-height: 300px; outline: none; }
-        
-        .score-actions { margin-bottom: 15px; display: flex; gap: 10px; }
+
+        /* Score Sections */
         .section-container { margin-bottom: 35px; border-radius: 15px; border: 1px solid #eee; background: transparent; }
-        .section-container.collapsed { margin-bottom: 15px; border: none; padding-bottom: 0; }
-        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 15px 15px 0 15px; }
+        .section-container.collapsed { margin-bottom: 15px; border: none; }
+        .section-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 15px 0 15px; margin-bottom: 15px; }
         .section-header-left { display: flex; align-items: center; gap: 10px; position: relative; }
-        
-        .collapse-icon { cursor: pointer; color: #999; font-size: 1.2rem; width: 15px; text-align: center; user-select: none; }
-        .collapse-icon:hover { color: #000; }
-        
+        .collapse-icon { cursor: pointer; color: #999; font-size: 1.2rem; width: 15px; text-align: center; }
         .dot-wrapper { position: relative; display: inline-block; height: 18px; }
-        .color-dot { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
-        .palette { display: flex; gap: 5px; margin-right: 15px; }
-        .section-controls-panel { display: none; position: absolute; background-color: #fff; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 10; border-radius: 10px; border: 1px solid #eee; padding: 15px; gap: 15px; flex-direction: column; top: 100%; left: 0; }
+        .color-dot { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; }
+        .section-controls-panel { display: none; position: absolute; background: #fff; min-width: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); z-index: 10; border-radius: 10px; border: 1px solid #eee; padding: 15px; flex-direction: column; gap: 10px; top: 100%; left: 0; }
         .dot-wrapper:hover .section-controls-panel { display: flex; }
-        
+
+        /* 4-Measure Grid */
         .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 0 15px 15px 15px; }
-        .measure { border: 2px solid #ddd; border-radius: 10px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; background: #fff; position: relative; padding: 0 5px; }
-        .measure input { width: 100%; border: none; border-bottom: 2px solid var(--accent); outline: none; text-align: center; font-size: 1rem; }
+        .measure { border: 2px solid #ddd; border-radius: 10px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; background: #fff; position: relative; }
+        .measure input { width: 90%; border: none; border-bottom: 2px solid var(--accent); outline: none; text-align: center; font-size: 1rem; }
         .edit-controls { position: absolute; bottom: 2px; left: 2px; display: flex; gap: 5px; }
-        .save-btn, .del-btn { font-size: 10px; cursor: pointer; border: none; border-radius: 3px; padding: 2px 5px; }
-        .save-btn { background: #4caf50; color: white; }
-        .del-btn { background: none; }
-        
-        .symbol { font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #555; display: inline-block; }
-        .check-pill { display: flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 10px; background: transparent; cursor: pointer; font-size: 0.8rem; }
-        .check-pill.active { background: var(--accent); font-weight: bold; }
-        .check-pill input { display: none; }
+        .save-btn { background: #4caf50; color: white; font-size: 10px; border: none; border-radius: 3px; padding: 2px 5px; cursor: pointer; }
+        .del-measure-btn { background: none; border: none; cursor: pointer; font-size: 10px; }
+        .check-pill { display: flex; align-items: center; gap: 3px; padding: 2px 6px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; border: 1px solid #ddd; }
+        .check-pill.active { background: var(--accent); border-color: var(--accent); font-weight: bold; }
+        .symbol { font-family: monospace; font-size: 1.2rem; color: #555; width: 25px; text-align: center; }
 
-        .controls-row { display: flex; align-items: center; justify-content: space-between; }
-        .repeat-counter { display: flex; align-items: center; gap: 5px; font-weight: bold; color: var(--accent); }
-
-        #presentation-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f4f4; z-index: 1000; overflow-y: auto; padding: 40px; box-sizing: border-box; }
-        .presentation-content { max-width: 800px; margin: 0 auto; background: white; padding: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 10px; }
-        .close-modal { position: absolute; top: 20px; right: 40px; padding: 8px 16px; border-radius: var(--border-radius); border: 1px solid #ccc; background: white; cursor: pointer; font-weight: bold; }
-        
-        @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
-        }
+        /* Modal */
+        #presentation-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f4f4; z-index: 1000; overflow-y: auto; padding: 40px; }
+        .presentation-content { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -110,73 +84,42 @@
     <div class="main" id="main-content" style="display: none;">
         <div class="song-header">
             <div class="song-title-row">
-                <h1 class="song-title" id="project-name" contenteditable="true" onblur="saveProjectName(this)" onkeypress="handleTitleKey(event, this)"></h1>
+                <h1 class="song-title" id="project-name" contenteditable="true" onblur="saveProjectName(this)" onkeypress="if(event.key==='Enter'){this.blur(); event.preventDefault();}"></h1>
                 <span style="color: #ccc;">✓</span>
             </div>
-            
             <div class="top-toolbar">
                 <button class="btn-pill" onclick="transpose(-1)">↘ -½</button>
                 <button class="btn-pill" onclick="transpose(1)">↗ +½</button>
-                <button class="btn-pill" onclick="resetTranspose()" title="Restablecer">🔄</button>
-                <span id="transpose-badge" style="font-weight:bold; color:var(--accent); min-width:20px; text-align:center; margin-right: 10px;">0</span>
-                
-                <div style="width: 1px; height: 20px; background: #ccc; margin: 0 10px;"></div>
-
-                <div class="dropdown">
-                    <button class="btn-pill">⚏ Plantillas</button>
-                    <div class="dropdown-content">
-                        <div onclick="applyTemplate('simple')">Canción simple<span>Intro → Verso → Coro → Outro</span></div>
-                        <div onclick="applyTemplate('completa')">Canción completa<span>Intro → Verso 1 → Pre-Coro → Coro...</span></div>
-                    </div>
-                </div>
-
+                <button class="btn-pill" onclick="resetTranspose()">🔄</button>
+                <span id="transpose-badge" style="font-weight:bold; color:var(--accent); min-width:20px; text-align:center;">0</span>
                 <button class="btn-pill" onclick="openPresentation()">↗ Presentación</button>
                 <button class="btn-pill" onclick="downloadPDF()">📥 PDF</button>
             </div>
-
             <div class="song-meta">
                 <input type="text" id="meta-singer" class="meta-input" placeholder="Cantante" onchange="updateMeta('singer', this.value)">
-                <select id="meta-key" class="meta-select" onchange="updateMeta('key', this.value)"><option value="">Tonalidad</option></select>
+                <select id="meta-key" class="meta-select" onchange="updateMeta('key', this.value)"></select>
                 <select id="meta-time" class="meta-select" onchange="updateMeta('time', this.value)">
                     <option value="">Compás</option>
-                    <option value="4/4">4/4</option>
-                    <option value="3/4">3/4</option>
-                    <option value="2/4">2/4</option>
-                    <option value="6/8">6/8</option>
-                    <option value="12/8">12/8</option>
-                    <option value="5/4">5/4</option>
-                    <option value="7/8">7/8</option>
+                    <option value="4/4">4/4</option><option value="3/4">3/4</option><option value="2/4">2/4</option>
+                    <option value="6/8">6/8</option><option value="12/8">12/8</option><option value="5/4">5/4</option>
                 </select>
             </div>
         </div>
-
         <div class="tabs">
             <div class="tab" id="tab-pizarra" onclick="setTab('pizarra')">Pizarra</div>
             <div class="tab" id="tab-score" onclick="setTab('score')">Score</div>
         </div>
-
         <div class="pizarra-container" id="pizarra-view">
-            <div class="top-toolbar" style="margin-bottom: 10px; background: #f8f9fa; padding: 10px; border-radius: 10px;">
-                <select class="meta-select" onchange="formatDoc('fontSize', this.value)">
-                    <option value="3">Normal</option><option value="5">Grande</option>
-                </select>
-                <input type="color" onchange="formatDoc('foreColor', this.value)">
-                <button class="btn-pill" onclick="formatDoc('bold')">B</button>
-                <button class="btn-pill" onclick="formatDoc('italic')">I</button>
-            </div>
             <div class="editor" id="rich-editor" contenteditable="true" onblur="savePizarra()"></div>
         </div>
-
         <div class="score-container" id="score-view">
-            <div class="score-actions">
-                <button class="btn-pill" onclick="addSection()" style="background:var(--accent); border:none;">+ Sección</button>
-            </div>
+            <div class="score-actions"><button class="btn-pill" onclick="addSection()" style="background:var(--accent); border:none;">+ Sección</button></div>
             <div id="sections-content"></div>
         </div>
     </div>
 
     <div id="presentation-modal">
-        <button class="close-modal" onclick="closePresentation()">Cerrar</button>
+        <button class="btn-pill" onclick="document.getElementById('presentation-modal').style.display='none'">Cerrar</button>
         <div class="presentation-content" id="print-area"></div>
     </div>
 
@@ -184,307 +127,141 @@
         const colors = ['#f8f9fa', '#ffebee', '#e8f5e9', '#e3f2fd', '#fffde7', '#f3e5f5', '#e0f7fa', '#ffe0b2'];
         const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         const flatToSharp = { 'Db':'C#', 'Eb':'D#', 'Gb':'F#', 'Ab':'G#', 'Bb':'A#' };
-
-        let projects = [];
-        let activeId = null;
-        let activeTab = 'score';
+        let projects = [], activeId = null, activeTab = 'score';
 
         async function init() {
-            const keySelect = document.getElementById('meta-key');
-            notes.forEach(n => {
-                keySelect.innerHTML += `<option value="${n}">${n}</option><option value="${n}m">${n}m</option>`;
-            });
+            const ks = document.getElementById('meta-key');
+            notes.forEach(n => { ks.innerHTML += `<option value="${n}">${n}</option><option value="${n}m">${n}m</option>`; });
             await loadProjects();
         }
 
         async function loadProjects() {
-            if(projects.length === 0) {
-                projects = [{ id: 1, name: "Demo: Can't Get You Off My Mind", meta: { singer: 'Lenny Kravitz', key: 'Gm', time: '4/4' }, pizarra: '', sections: [
-                    { id: 's1', name: 'Intro', color: '#e3f2fd', repeat_count: 1, collapsed: false, measures: [
-                        {originalVal: '||: G', editing: false}, {originalVal: '%', editing: false}, {originalVal: 'Am', editing: false}, {originalVal: '% :||', editing: false}
-                    ]}
-                ], transposeOffset: 0 }];
-                activeId = 1;
-            }
+            try {
+                const res = await fetch('/api/projects');
+                const data = await res.json();
+                if (data) { projects = data; activeId = projects[0].id; }
+            } catch (e) { console.log("Usando memoria local..."); }
             render();
         }
 
         async function saveState() {
-            render(); 
-        }
-
-        function filterProjects() {
-            const term = document.getElementById('search-input').value.toLowerCase();
-            const items = document.querySelectorAll('.project-item');
-            items.forEach(item => {
-                const text = item.querySelector('span').textContent.toLowerCase();
-                item.style.display = text.includes(term) ? 'flex' : 'none';
-            });
-        }
-
-        function handleTitleKey(e, el) { if (e.key === 'Enter') el.blur(); }
-
-        function saveProjectName(el) {
-            const p = getProj();
-            const newName = el.textContent.trim();
-            if(p && newName !== p.name) { p.name = newName; saveState(); }
-        }
-
-        function deleteProjectHandler(id) {
-            if(confirm("¿Eliminar esta canción?")) {
-                projects = projects.filter(x => x.id !== id);
-                if(activeId === id) activeId = projects.length ? projects[0].id : null;
-                saveState();
-            }
+            render();
+            try {
+                await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ projects }) });
+            } catch (e) {}
         }
 
         function render() {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map(p => `
-                <div class="project-item ${p.id === activeId ? 'active' : ''}" onclick="selectProject(${p.id})">
+                <div class="project-item ${p.id === activeId ? 'active' : ''}" onclick="activeId=${p.id};render();">
                     <span>${p.name}</span>
-                    <button class="del-btn" onclick="event.stopPropagation(); deleteProjectHandler(${p.id})">🗑️</button>
-                </div>
-            `).join('');
-            
-            filterProjects();
+                    <button class="del-btn" onclick="event.stopPropagation();if(confirm('¿Eliminar?')){projects=projects.filter(x=>x.id!==${p.id});saveState();}">🗑️</button>
+                </div>`).join('');
 
-            const project = getProj();
-            if (!project) {
-                document.getElementById('main-content').style.display = 'none';
-                return;
-            }
-
+            const p = projects.find(x => x.id === activeId);
+            if (!p) return document.getElementById('main-content').style.display = 'none';
             document.getElementById('main-content').style.display = 'flex';
-            document.getElementById('project-name').textContent = project.name;
-            document.getElementById('meta-singer').value = project.meta.singer || '';
-            document.getElementById('meta-key').value = project.meta.key || '';
-            document.getElementById('meta-time').value = project.meta.time || '';
+            document.getElementById('project-name').textContent = p.name;
+            document.getElementById('meta-singer').value = p.meta.singer || '';
+            document.getElementById('meta-key').value = p.meta.key || '';
+            document.getElementById('meta-time').value = p.meta.time || '';
+            document.getElementById('transpose-badge').textContent = p.transposeOffset || 0;
             
-            let tBadge = project.transposeOffset > 0 ? `+${project.transposeOffset}` : project.transposeOffset;
-            document.getElementById('transpose-badge').textContent = tBadge;
-
             document.getElementById('tab-pizarra').className = `tab ${activeTab === 'pizarra' ? 'active' : ''}`;
             document.getElementById('tab-score').className = `tab ${activeTab === 'score' ? 'active' : ''}`;
             document.getElementById('pizarra-view').className = `pizarra-container ${activeTab === 'pizarra' ? 'active' : ''}`;
             document.getElementById('score-view').className = `score-container ${activeTab === 'score' ? 'active' : ''}`;
 
-            if (activeTab === 'pizarra') {
-                const editor = document.getElementById('rich-editor');
-                if (editor.innerHTML !== project.pizarra) editor.innerHTML = project.pizarra;
-            } else {
-                const container = document.getElementById('sections-content');
-                container.innerHTML = project.sections.map(s => {
-                    const repeatText = s.repeat_count > 1 ? `<span style="font-weight:normal; color:#888; font-size:0.9em; margin-left:4px;">x${s.repeat_count}</span>` : '';
-                    
-                    return `
-                    <div class="section-container ${s.collapsed ? 'collapsed' : ''}" id="sec-${s.id}" style="${s.collapsed ? '' : `border-left:5px solid ${s.color === '#f8f9fa' ? '#ccc' : s.color}`}">
-                        <div class="section-header" style="${s.collapsed ? 'padding: 0;' : ''}">
+            if (activeTab === 'pizarra') document.getElementById('rich-editor').innerHTML = p.pizarra || '';
+            else {
+                document.getElementById('sections-content').innerHTML = p.sections.map(s => `
+                    <div class="section-container ${s.collapsed ? 'collapsed' : ''}" style="${s.collapsed ? '' : `border-left:5px solid ${s.color}`}">
+                        <div class="section-header">
                             <div class="section-header-left">
-                                <span class="collapse-icon" onclick="toggleSectionCollapse('${s.id}')">${s.collapsed ? '›' : '⌄'}</span>
-                                
+                                <span class="collapse-icon" onclick="const p=projects.find(x=>x.id===${activeId}); const sec=p.sections.find(x=>x.id==='${s.id}'); sec.collapsed=!sec.collapsed; saveState();">${s.collapsed ? '›' : '⌄'}</span>
                                 <div class="dot-wrapper">
                                     <div class="color-dot" style="background:${s.color}"></div>
                                     <div class="section-controls-panel">
-                                        <div class="controls-row">
-                                            <div class="palette">
-                                                ${colors.map(c => `<div class="color-dot" style="background:${c}" onclick="updateColor('${s.id}', '${c}')"></div>`).join('')}
-                                            </div>
-                                        </div>
-                                        <div class="controls-row">
-                                            <div class="repeat-counter">
-                                                <span>Repetir:</span>
-                                                <button class="btn-pill" style="padding:2px 8px" onclick="changeRepeat('${s.id}', -1)">-</button>
-                                                <span style="font-weight:bold">${s.repeat_count > 1 ? `x${s.repeat_count}` : 'x1'}</span>
-                                                <button class="btn-pill" style="padding:2px 8px" onclick="changeRepeat('${s.id}', 1)">+</button>
-                                            </div>
-                                            <div style="display:flex; gap:5px;">
-                                                <button class="btn-pill" style="padding:2px 8px" onclick="duplicateSection('${s.id}')">📋</button>
-                                                <button class="btn-pill" style="padding:2px 8px" onclick="deleteSection('${s.id}')">🗑️</button>
-                                            </div>
+                                        <div class="palette">${colors.map(c => `<div class="color-dot" style="background:${c}" onclick="const p=projects.find(x=>x.id===${activeId}); p.sections.find(x=>x.id==='${s.id}').color='${c}'; saveState();"></div>`).join('')}</div>
+                                        <div style="display:flex; justify-content:space-between;">
+                                            <button class="btn-pill" onclick="const p=projects.find(x=>x.id===${activeId}); p.sections.find(x=>x.id==='${s.id}').repeat_count++; saveState();">+ Repetir</button>
+                                            <button class="btn-pill" onclick="if(confirm('¿Eliminar?')){const p=projects.find(x=>x.id===${activeId}); p.sections=p.sections.filter(x=>x.id!=='${s.id}'); saveState();}">🗑️</button>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <div><span style="font-weight:bold">${s.name}</span>${repeatText}</div>
+                                <span style="font-weight:bold">${s.name}</span> <span style="color:#888; font-size:0.9em;">${s.repeat_count > 1 ? 'x'+s.repeat_count : ''}</span>
                             </div>
-                            
-                            <div style="display:flex; gap: 5px;">
-                                <button class="btn-pill" style="padding: 2px 8px; font-weight: bold;" onclick="moveSection('${s.id}', -1)" title="Subir sección">↑</button>
-                                <button class="btn-pill" style="padding: 2px 8px; font-weight: bold;" onclick="moveSection('${s.id}', 1)" title="Bajar sección">↓</button>
+                            <div>
+                                <button class="btn-pill" onclick="moveSec('${s.id}',-1)">↑</button><button class="btn-pill" onclick="moveSec('${s.id}',1)">↓</button>
                             </div>
                         </div>
-                        <div class="grid" style="${s.collapsed ? 'display: none;' : ''}">
+                        <div class="grid" style="${s.collapsed ? 'display:none' : ''}">
                             ${s.measures.map((m, idx) => {
-                                let val = m.editing ? m.originalVal : processTransposition(m.originalVal, project.transposeOffset);
-                                const hasStart = val.includes('||:');
-                                const hasEnd = val.includes(':||');
-                                const cleanVal = val.replace(/\|\|:\s*/g, '').replace(/\s*:\|\|/g, '');
-
-                                return `
-                                <div class="measure">
-                                    ${m.editing ? 
-                                        `<input type="text" id="in-${s.id}-${idx}" value="${val}" onkeydown="handleKey(event, '${s.id}', ${idx})">
-                                         <div class="edit-controls">
-                                             <label class="check-pill ${hasStart ? 'active' : ''}">
-                                                 <input type="checkbox" onchange="toggleSymbol('${s.id}', ${idx}, 'start')"> ||:
-                                             </label>
-                                             <label class="check-pill ${hasEnd ? 'active' : ''}">
-                                                 <input type="checkbox" onchange="toggleSymbol('${s.id}', ${idx}, 'end')"> :||
-                                             </label>
-                                             <button class="save-btn" onclick="saveMeasure('${s.id}', ${idx})">✓</button>
-                                             <button class="del-btn" onclick="deleteMeasure('${s.id}', ${idx})">🗑️</button>
-                                         </div>` : 
-                                        `<span style="width:100%; text-align:center; cursor:pointer; display: flex; align-items: center; justify-content: space-between; padding: 0 5px;" onclick="editMeasure('${s.id}', ${idx})">
-                                            ${hasStart ? '<span class="symbol">||:</span>' : '<span></span>'}
-                                            ${cleanVal || '...'}
-                                            ${hasEnd ? '<span class="symbol">:||</span>' : '<span></span>'}
-                                         </span>`
-                                    }
-                                </div>
-                            `}).join('')}
-                            <div class="measure" style="border-style:dashed; cursor:pointer; background: transparent;" onclick="addMeasure('${s.id}')">+</div>
+                                let val = m.editing ? m.originalVal : trans(m.originalVal, p.transposeOffset);
+                                return `<div class="measure">
+                                    ${m.editing ? `<input id="in-${s.id}-${idx}" value="${val}" onkeydown="if(event.key==='Enter')saveMea('${s.id}',${idx})">
+                                        <div class="edit-controls">
+                                            <label class="check-pill ${val.includes('||:')?'active':''}"><input type="checkbox" onchange="togSym('${s.id}',${idx},'start')">||:</label>
+                                            <label class="check-pill ${val.includes(':||')?'active':''}"><input type="checkbox" onchange="togSym('${s.id}',${idx},'end')">:||</label>
+                                            <button class="save-btn" onclick="saveMea('${s.id}',${idx})">✓</button>
+                                        </div>` : `<span style="width:100%;text-align:center;cursor:pointer;display:flex;justify-content:space-between;padding:0 10px" onclick="const p=projects.find(x=>x.id===${activeId}); p.sections.find(x=>x.id==='${s.id}').measures[${idx}].editing=true;render();">
+                                            <span>${val.includes('||:')?'||:':''}</span><span>${val.replace('||:','').replace(':||','').trim()}</span><span>${val.includes(':||')?':||':''}</span>
+                                        </span>`}
+                                </div>`
+                            }).join('')}
+                            <div class="measure" style="border-style:dashed;cursor:pointer" onclick="const p=projects.find(x=>x.id===${activeId}); p.sections.find(x=>x.id==='${s.id}').measures.push({originalVal:'',editing:true});render();">+</div>
                         </div>
-                    </div>
-                `}).join('');
+                    </div>`).join('');
             }
         }
 
-        function processTransposition(input, offset) {
-            if (!input || input === '%' || offset === 0) return input;
-            return input.split(' ').map(chord => transposeChord(chord, offset)).join(' ');
+        function trans(input, offset) {
+            if (!input || input === '%' || !offset) return input;
+            return input.split(' ').map(c => {
+                const m = c.match(/^(\|\|:\s*)?([CDEFGAB][#b]?)(.*?)(\s*:\|\|)?$/i);
+                if (!m) return c;
+                let root = m[2].charAt(0).toUpperCase() + m[2].slice(1).replace('b', '');
+                if (m[2].endsWith('b')) root = flatToSharp[m[2].charAt(0).toUpperCase() + 'b'] || root;
+                let idx = notes.indexOf(root);
+                if (idx === -1) return c;
+                let newIdx = (idx + offset) % 12; if (newIdx < 0) newIdx += 12;
+                return (m[1]||'') + notes[newIdx] + m[3] + (m[4]||'');
+            }).join(' ');
         }
 
-        function transposeChord(chord, offset) {
-            const match = chord.match(/^([CDEFGAB][#b]?)(.*)$/i);
-            if (!match) return chord;
-            let root = match[1].charAt(0).toUpperCase() + match[1].slice(1);
-            if (match[1].length > 1 && match[1].endsWith('b')) root = flatToSharp[match[1].charAt(0).toUpperCase() + 'b'] || root;
-            let idx = notes.indexOf(root);
-            if (idx === -1) return chord;
-            let newIdx = (idx + offset) % 12;
-            if (newIdx < 0) newIdx += 12;
-            return notes[newIdx] + match[2];
-        }
-
-        function transpose(steps) { getProj().transposeOffset += steps; saveState(); }
-        function resetTranspose() { getProj().transposeOffset = 0; saveState(); }
-
-        function applyTemplate(type) {
-            const p = getProj();
-            if (p.sections.length > 0 && !confirm("Reemplazará la estructura actual. ¿Continuar?")) return;
-            p.sections = [];
-            const createSec = (name) => ({ id: 's'+Date.now()+Math.random(), name, color: '#f8f9fa', repeat_count: 1, collapsed: false, measures: [{originalVal: '', editing: false}, {originalVal: '%', editing: false}, {originalVal: '', editing: false}, {originalVal: '%', editing: false}]});
-            if (type === 'simple') ['Intro', 'Verso', 'Coro', 'Outro'].forEach(n => p.sections.push(createSec(n)));
-            else if (type === 'completa') ['Intro', 'Verso 1', 'Pre-Coro', 'Coro', 'Verso 2', 'Coro', 'Puente', 'Coro', 'Outro'].forEach(n => p.sections.push(createSec(n)));
-            saveState();
-        }
-
-        function generatePresentationHTML() {
-            const p = getProj();
-            let html = `<h1 style="text-align: center; margin-bottom: 5px;">${p.name}</h1><div style="text-align: center; margin-bottom: 30px; font-size: 14px; color: #555;">${p.meta.singer ? `<span>Artista: <b>${p.meta.singer}</b></span> | ` : ''}${p.meta.key ? `<span>Tonalidad: <b>${p.meta.key}</b></span> | ` : ''}${p.meta.time ? `<span>Compás: <b>${p.meta.time}</b></span>` : ''}</div>`;
-            p.sections.forEach(s => {
-                const repeatText = s.repeat_count > 1 ? `<span style="font-weight:normal; color:#888;">x${s.repeat_count}</span>` : '';
-                html += `<div style="margin-bottom: 20px;"><h3 style="margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px;">${s.name} ${repeatText}</h3><div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">`;
-                s.measures.forEach(m => {
-                    let val = processTransposition(m.originalVal, p.transposeOffset) || ' ';
-                    const cleanVal = val.replace(/\|\|:\s*/g, '').replace(/\s*:\|\|/g, '');
-                    const sSym = val.includes('||:') ? '||:' : '';
-                    const eSym = val.includes(':||') ? ':||' : '';
-                    html += `<div style="border: 1px solid #000; height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; font-weight: bold; font-size: 1.2rem; border-radius: 5px;"><span>${sSym}</span><span>${cleanVal}</span><span>${eSym}</span></div>`;
-                });
-                html += `</div></div>`;
-            });
-            return html;
-        }
-
-        function openPresentation() { document.getElementById('print-area').innerHTML = generatePresentationHTML(); document.getElementById('presentation-modal').style.display = 'block'; }
-        function closePresentation() { document.getElementById('presentation-modal').style.display = 'none'; }
-        function downloadPDF() {
-            const printArea = document.getElementById('print-area');
-            printArea.innerHTML = generatePresentationHTML();
-            const opt = { margin: 10, filename: `${getProj().name}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
-            printArea.style.display = 'block';
-            html2pdf().set(opt).from(printArea).save().then(() => { if (document.getElementById('presentation-modal').style.display === 'none') printArea.innerHTML = ''; });
-        }
-
-        function setTab(tab) { activeTab = tab; render(); }
-        function selectProject(id) { activeId = id; render(); }
-        function addProject(name = null) {
-            const n = name || prompt("Nombre de la canción:");
-            if (n) {
-                projects.push({ id: Date.now(), name: n, meta: { singer: '', key: '', time: '' }, pizarra: '', sections: [], transposeOffset: 0 });
-                activeId = projects[projects.length - 1].id;
-                saveState();
-            }
-        }
-        function updateMeta(field, val) { getProj().meta[field] = val; saveState(); }
-        function savePizarra() { getProj().pizarra = document.getElementById('rich-editor').innerHTML; saveState(); }
-        function formatDoc(cmd, val = null) { document.execCommand(cmd, false, val); }
-
-        function addSection() {
-            const name = prompt("Nombre (Intro, Verso...):");
-            if (name) { getProj().sections.push({ id: 's'+Date.now(), name, color: '#f8f9fa', repeat_count: 1, collapsed: false, measures: [] }); saveState(); }
-        }
-        function duplicateSection(id) {
-            const s = getSection(id);
-            getProj().sections.push({...s, id: 's'+Date.now(), measures: JSON.parse(JSON.stringify(s.measures)).map(m => ({...m, editing: false}))});
-            saveState();
-        }
-        function deleteSection(id) { if(confirm("¿Borrar sección?")) { getProj().sections = getProj().sections.filter(x => x.id !== id); saveState(); } }
-        function updateColor(sid, c) { getSection(sid).color = c; saveState(); }
-        
-        function toggleSectionCollapse(id) { const s = getSection(id); s.collapsed = !s.collapsed; saveState(); }
-        
-        function moveSection(id, direction) {
-            const p = getProj();
-            const idx = p.sections.findIndex(s => s.id === id);
-            if (idx < 0) return;
-            const newIdx = idx + direction;
-            if (newIdx >= 0 && newIdx < p.sections.length) {
-                const temp = p.sections[idx];
-                p.sections[idx] = p.sections[newIdx];
-                p.sections[newIdx] = temp;
+        function moveSec(id, dir) {
+            const p = projects.find(x => x.id === activeId);
+            const idx = p.sections.findIndex(x => x.id === id);
+            if (idx + dir >= 0 && idx + dir < p.sections.length) {
+                [p.sections[idx], p.sections[idx + dir]] = [p.sections[idx + dir], p.sections[idx]];
                 saveState();
             }
         }
 
-        function changeRepeat(sid, steps) { const s = getSection(sid); if(s) { s.repeat_count = Math.max(1, s.repeat_count + steps); saveState(); } }
-        function addMeasure(sid) { getSection(sid).measures.push({ originalVal: '', editing: true }); render(); }
-        function editMeasure(sid, idx) { getSection(sid).measures[idx].editing = true; render(); }
-        function saveMeasure(sid, idx) { getSection(sid).measures[idx] = { originalVal: document.getElementById(`in-${sid}-${idx}`).value.trim() || '%', editing: false }; saveState(); }
-        function deleteMeasure(sid, idx) { getSection(sid).measures.splice(idx, 1); saveState(); }
-        function handleKey(e, sid, idx) { if (e.key === 'Enter') saveMeasure(sid, idx); }
-        
-        function toggleSymbol(sid, idx, type) {
+        function togSym(sid, idx, type) {
             const input = document.getElementById(`in-${sid}-${idx}`);
-            let val = input.value;
-            
-            if(type === 'start') {
-                val = val.includes('||:') ? val.replace(/\|\|:\s*/g, '') : '||: ' + val;
-            } else if(type === 'end') {
-                val = val.includes(':||') ? val.replace(/\s*:\|\|/g, '') : val + ' :||';
-            }
-            
+            let val = input.value.trim();
+            if (type === 'start') val = val.includes('||:') ? val.replace('||:', '').trim() : '||: ' + val;
+            else val = val.includes(':||') ? val.replace(':||', '').trim() : val + ' :||';
             input.value = val;
-            
-            const hasStart = val.includes('||:');
-            const hasEnd = val.includes(':||');
-            input.nextElementSibling.innerHTML = `
-                <label class="check-pill ${hasStart ? 'active' : ''}">
-                    <input type="checkbox" onchange="toggleSymbol('${sid}', ${idx}, 'start')"> ||:
-                </label>
-                <label class="check-pill ${hasEnd ? 'active' : ''}">
-                    <input type="checkbox" onchange="toggleSymbol('${sid}', ${idx}, 'end')"> :||
-                </label>
-                <button class="save-btn" onclick="saveMeasure('${sid}', ${idx})">✓</button>
-                <button class="del-btn" onclick="deleteMeasure('${sid}', ${idx})">🗑️</button>
-            `;
         }
 
-        function getProj() { return projects.find(p => p.id === activeId); }
-        function getSection(id) { return getProj().sections.find(s => s.id === id); }
+        function saveMea(sid, idx) {
+            const p = projects.find(x => x.id === activeId);
+            p.sections.find(x => x.id === sid).measures[idx] = { originalVal: document.getElementById(`in-${sid}-${idx}`).value.trim() || '%', editing: false };
+            saveState();
+        }
 
+        // Utils
+        function addProject() { const n = prompt("Nombre:"); if(n){ projects.push({id:Date.now(),name:n,meta:{},sections:[]}); activeId=projects[projects.length-1].id; saveState(); } }
+        function addSection() { const n = prompt("Nombre:"); if(n){ projects.find(x=>x.id===activeId).sections.push({id:'s'+Date.now(),name:n,color:'#f8f9fa',repeat_count:1,measures:[]}); saveState(); } }
+        function setTab(t) { activeTab = t; render(); }
+        function transpose(n) { projects.find(x=>x.id===activeId).transposeOffset = (projects.find(x=>x.id===activeId).transposeOffset || 0) + n; saveState(); }
+        function resetTranspose() { projects.find(x=>x.id===activeId).transposeOffset = 0; saveState(); }
+        function updateMeta(k, v) { projects.find(x=>x.id===activeId).meta[k] = v; saveState(); }
+        function savePizarra() { projects.find(x=>x.id===activeId).pizarra = document.getElementById('rich-editor').innerHTML; saveState(); }
+        function openPresentation() { document.getElementById('print-area').innerHTML = "<h1>"+projects.find(x=>x.id===activeId).name+"</h1>"; document.getElementById('presentation-modal').style.display='block'; }
         init();
     </script>
 </body>
