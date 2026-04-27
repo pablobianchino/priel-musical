@@ -3,69 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <title>Priel Musical</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        :root { --accent: #ffc107; }
-        body { display: flex; height: 100vh; margin: 0; font-family: system-ui, sans-serif; background: #fff; }
+        :root { --accent: #ffc107; --border-radius: 20px; }
+        body { display: flex; height: 100vh; margin: 0; font-family: system-ui, sans-serif; background: #fff; color: #333; }
         
-        .sidebar { width: 260px; background: #f8f9fa; padding: 20px; border-right: 1px solid #e9ecef; display: flex; flex-direction: column; }
-        .app-title { font-size: 18px; font-weight: bold; margin-bottom: 25px; color: #000; }
+        /* Layout Principal y Sidebar */
+        .sidebar { width: 260px; background: #f8f9fa; padding: 20px; border-right: 1px solid #e9ecef; display: flex; flex-direction: column; gap: 15px; }
+        .app-title { font-size: 20px; font-weight: bold; color: #000; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         
-        .project-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-        .project-item { padding: 12px; background: #eee; border-radius: 6px; cursor: pointer; transition: 0.2s; }
-        .project-item.active { background: var(--accent); font-weight: bold; }
+        .search-box { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; box-sizing: border-box; font-size: 0.9rem; background: white; }
+        .sidebar-header { font-size: 0.8rem; color: #666; font-weight: bold; display: flex; align-items: center; gap: 5px; margin-top: 5px; }
         
-        .main { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
+        .project-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+        .project-item { padding: 10px 15px; background: transparent; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
+        .project-item:hover { background: #e9ecef; }
+        .project-item.active { background: var(--accent); font-weight: bold; color: #000; }
         
-        .song-header { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        .song-title { font-size: 2rem; font-weight: bold; margin: 0; }
-        .song-meta { display: flex; gap: 15px; }
-        .meta-input, .meta-select { padding: 5px; border: 1px solid #ccc; border-radius: 4px; background: white; }
+        .add-project-link { padding: 10px 15px; cursor: pointer; color: #555; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+        .add-project-link:hover { color: #000; font-weight: 500; }
         
+        .main { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
+        
+        /* Cabecera y Botones Redondeados */
+        .song-header { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+        .song-title-row { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .song-title { font-size: 1.8rem; font-weight: bold; margin: 0; }
+        
+        .top-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .btn-pill { 
+            padding: 6px 16px; border: 1px solid #ccc; border-radius: var(--border-radius); 
+            background: white; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; 
+        }
+        .btn-pill:hover { background: #f0f0f0; }
+        
+        /* Menú desplegable Plantillas */
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { 
+            display: none; position: absolute; background-color: #fff; min-width: 200px; 
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 1; border-radius: 10px; border: 1px solid #eee; top: 100%; left: 0; margin-top: 5px;
+        }
+        .dropdown-content div { color: black; padding: 12px 16px; text-decoration: none; display: block; cursor: pointer; border-bottom: 1px solid #eee; }
+        .dropdown-content div:hover { background-color: #f1f1f1; }
+        .dropdown-content div span { display: block; font-size: 0.8em; color: #666; margin-top: 3px; }
+        .dropdown:hover .dropdown-content { display: block; }
+
+        /* Metadatos */
+        .song-meta { display: flex; gap: 15px; margin-top: 5px; }
+        .meta-input, .meta-select { padding: 6px 12px; border: 1px solid #ccc; border-radius: 10px; background: white; outline: none; }
+        
+        /* Pestañas */
         .tabs { display: flex; gap: 20px; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
         .tab { padding: 10px 0; cursor: pointer; color: #666; border-bottom: 3px solid transparent; }
         .tab.active { border-color: var(--accent); color: #000; font-weight: bold; }
 
-        .toolbar { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #eee; }
-        .btn { padding: 8px 15px; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; background: white; font-weight: 500; }
+        /* Vistas */
+        .pizarra-container, .score-container { display: none; flex-direction: column; flex: 1; }
+        .pizarra-container.active, .score-container.active { display: flex; }
         
-        /* Pizarra */
-        .pizarra-container { display: none; flex: 1; flex-direction: column; }
-        .pizarra-container.active { display: flex; }
-        .editor { flex: 1; border: 1px solid #ccc; border-radius: 5px; padding: 15px; min-height: 300px; outline: none; }
+        .editor { flex: 1; border: 1px solid #ccc; border-radius: 10px; padding: 15px; min-height: 300px; outline: none; }
         
-        /* Score */
-        .score-container { display: none; flex-direction: column; }
-        .score-container.active { display: flex; }
-        
-        .section-container { margin-bottom: 35px; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
+        /* Score y Compases */
+        .score-actions { margin-bottom: 15px; }
+        .section-container { margin-bottom: 35px; padding: 15px; border-radius: 15px; border: 1px solid #eee; }
         .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
-        .section-header-left { display: flex; align-items: center; gap: 15px; }
-        .palette { display: flex; gap: 5px; }
-        .color-dot { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); }
-
+        .palette { display: flex; gap: 5px; margin-right: 15px; }
+        .color-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
-        .measure { border: 2px solid #ddd; border-radius: 8px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; background: #fff; position: relative; }
+        .measure { border: 2px solid #ddd; border-radius: 10px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; background: #fff; position: relative; }
         .measure input { width: 85%; border: none; border-bottom: 2px solid var(--accent); outline: none; text-align: center; font-size: 1rem; }
-        .save-btn { position: absolute; right: 2px; bottom: 2px; font-size: 10px; cursor: pointer; background: #4caf50; color: white; border: none; border-radius: 3px; padding: 2px 5px; }
-        .del-btn { position: absolute; left: 2px; bottom: 2px; font-size: 10px; cursor: pointer; background: none; border: none; }
+        .save-btn, .del-btn { position: absolute; bottom: 2px; font-size: 10px; cursor: pointer; border: none; border-radius: 3px; padding: 2px 5px; }
+        .save-btn { right: 2px; background: #4caf50; color: white; }
+        .del-btn { left: 2px; background: none; }
+
+        /* Modal Presentación */
+        #presentation-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f4f4; z-index: 1000; overflow-y: auto; padding: 40px; box-sizing: border-box; }
+        .presentation-content { max-width: 800px; margin: 0 auto; background: white; padding: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 10px; }
+        .close-modal { position: absolute; top: 20px; right: 40px; padding: 8px 16px; border-radius: var(--border-radius); border: 1px solid #ccc; background: white; cursor: pointer; font-weight: bold; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+        }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <div class="app-title">🎵 Priel Musical</div>
+        
+        <input type="text" id="search-input" class="search-box" placeholder="🔍 Buscar proyectos..." onkeyup="filterProjects()">
+        
+        <div class="sidebar-header">⌄ CANCIONES</div>
+        
         <div class="project-list" id="project-list"></div>
-        <button class="btn" onclick="addProject()" style="margin-top: 15px; background: var(--accent); border:none;">+ Nueva Canción</button>
+        
+        <div class="add-project-link" onclick="addProject()">
+            <span>⊕</span> Canción nueva
+        </div>
     </div>
 
     <div class="main" id="main-content" style="display: none;">
         <div class="song-header">
-            <h1 class="song-title" id="project-name"></h1>
+            <div class="song-title-row">
+                <h1 class="song-title" id="project-name"></h1>
+                <span style="color: #ccc;">✓</span>
+            </div>
+            
+            <div class="top-toolbar">
+                <button class="btn-pill" onclick="transpose(-1)">↘ -½</button>
+                <button class="btn-pill" onclick="transpose(1)">↗ +½</button>
+                <button class="btn-pill" onclick="resetTranspose()" title="Restablecer">🔄</button>
+                <span id="transpose-badge" style="font-weight:bold; color:var(--accent); min-width:20px; text-align:center; margin-right: 10px;">0</span>
+                
+                <div style="width: 1px; height: 20px; background: #ccc; margin: 0 10px;"></div>
+
+                <div class="dropdown">
+                    <button class="btn-pill">⚏ Plantillas</button>
+                    <div class="dropdown-content">
+                        <div onclick="applyTemplate('simple')">
+                            Canción simple
+                            <span>Intro → Verso → Coro → Outro</span>
+                        </div>
+                        <div onclick="applyTemplate('completa')">
+                            Canción completa
+                            <span>Intro → Verso 1 → Pre-Coro → Coro → Verso 2...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-pill" onclick="openPresentation()">↗ Presentación</button>
+                <button class="btn-pill" onclick="downloadPDF()">📥 PDF</button>
+            </div>
+
             <div class="song-meta">
                 <input type="text" id="meta-singer" class="meta-input" placeholder="Cantante" onchange="updateMeta('singer', this.value)">
                 <select id="meta-key" class="meta-select" onchange="updateMeta('key', this.value)">
                     <option value="">Tonalidad</option>
-                    </select>
+                </select>
                 <input type="text" id="meta-time" class="meta-input" placeholder="Compás (ej. 4/4)" onchange="updateMeta('time', this.value)">
             </div>
         </div>
@@ -76,35 +152,34 @@
         </div>
 
         <div class="pizarra-container" id="pizarra-view">
-            <div class="toolbar">
-                <select onchange="formatDoc('fontSize', this.value)">
+            <div class="top-toolbar" style="margin-bottom: 10px; background: #f8f9fa; padding: 10px; border-radius: 10px;">
+                <select class="meta-select" onchange="formatDoc('fontSize', this.value)">
                     <option value="3">Normal</option>
                     <option value="5">Grande</option>
-                    <option value="7">Extra</option>
                 </select>
                 <input type="color" onchange="formatDoc('foreColor', this.value)">
-                <button class="btn" onclick="formatDoc('bold')">B</button>
-                <button class="btn" onclick="formatDoc('italic')">I</button>
+                <button class="btn-pill" onclick="formatDoc('bold')">B</button>
+                <button class="btn-pill" onclick="formatDoc('italic')">I</button>
             </div>
             <div class="editor" id="rich-editor" contenteditable="true" onblur="savePizarra()"></div>
         </div>
 
         <div class="score-container" id="score-view">
-            <div class="toolbar">
-                <button class="btn" onclick="addSection()" style="background:var(--accent); border:none;">+ Sección</button>
-                <div style="flex: 1;"></div>
-                <span style="font-weight:bold; font-size:0.9em;">Transpose:</span>
-                <button class="btn" onclick="transpose(-1)">-1</button>
-                <button class="btn" onclick="transpose(1)">+1</button>
-                <button class="btn" onclick="resetTranspose()">Reset</button>
-                <span id="transpose-badge" style="font-weight:bold; color:var(--accent); min-width:20px; text-align:center;">0</span>
+            <div class="score-actions">
+                <button class="btn-pill" onclick="addSection()" style="background:var(--accent); border:none;">+ Sección</button>
             </div>
             <div id="sections-content"></div>
         </div>
     </div>
 
+    <div id="presentation-modal">
+        <button class="close-modal" onclick="closePresentation()">Cerrar</button>
+        <div class="presentation-content" id="print-area">
+            </div>
+    </div>
+
     <script>
-        const colors = ['#f8f9fa', '#ffcccc', '#ccffcc', '#ccccff', '#ffffcc', '#ffccff', '#ccffff'];
+        const colors = ['#f8f9fa', '#ffebee', '#e8f5e9', '#e3f2fd', '#fffde7', '#f3e5f5', '#e0f7fa'];
         const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         const flatToSharp = { 'Db':'C#', 'Eb':'D#', 'Gb':'F#', 'Ab':'G#', 'Bb':'A#' };
 
@@ -115,10 +190,18 @@
         function init() {
             const keySelect = document.getElementById('meta-key');
             notes.forEach(n => {
-                keySelect.innerHTML += `<option value="${n}">${n}</option>`;
-                keySelect.innerHTML += `<option value="${n}m">${n}m</option>`;
+                keySelect.innerHTML += `<option value="${n}">${n}</option><option value="${n}m">${n}m</option>`;
             });
             addProject("Demo");
+        }
+
+        function filterProjects() {
+            const term = document.getElementById('search-input').value.toLowerCase();
+            const items = document.querySelectorAll('.project-item');
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(term) ? 'block' : 'none';
+            });
         }
 
         function render() {
@@ -128,6 +211,8 @@
                     ${p.name}
                 </div>
             `).join('');
+            
+            filterProjects(); // Mantiene el filtro si se re-renderiza
 
             const project = getProj();
             if (!project) return;
@@ -137,7 +222,9 @@
             document.getElementById('meta-singer').value = project.meta.singer;
             document.getElementById('meta-key').value = project.meta.key;
             document.getElementById('meta-time').value = project.meta.time;
-            document.getElementById('transpose-badge').textContent = project.transposeOffset;
+            
+            let tBadge = project.transposeOffset > 0 ? `+${project.transposeOffset}` : project.transposeOffset;
+            document.getElementById('transpose-badge').textContent = tBadge;
 
             document.getElementById('tab-pizarra').className = `tab ${activeTab === 'pizarra' ? 'active' : ''}`;
             document.getElementById('tab-score').className = `tab ${activeTab === 'score' ? 'active' : ''}`;
@@ -152,15 +239,15 @@
                 container.innerHTML = project.sections.map(s => `
                     <div class="section-container" style="background:${s.color}30; border-left:5px solid ${s.color === '#f8f9fa' ? '#ccc' : s.color}">
                         <div class="section-header">
-                            <div class="section-header-left">
+                            <div style="display:flex; align-items:center;">
                                 <div class="palette">
                                     ${colors.map(c => `<div class="color-dot" style="background:${c}" onclick="updateColor('${s.id}', '${c}')"></div>`).join('')}
                                 </div>
                                 <span style="font-weight:bold">${s.name}</span>
                             </div>
-                            <div>
-                                <button class="btn" style="padding:2px 8px" onclick="duplicateSection('${s.id}')">📋</button>
-                                <button class="btn" style="padding:2px 8px" onclick="deleteSection('${s.id}')">🗑️</button>
+                            <div style="display:flex; gap:5px;">
+                                <button class="btn-pill" style="padding:2px 8px" onclick="duplicateSection('${s.id}')">📋</button>
+                                <button class="btn-pill" style="padding:2px 8px" onclick="deleteSection('${s.id}')">🗑️</button>
                             </div>
                         </div>
                         <div class="grid">
@@ -176,49 +263,109 @@
                                     }
                                 </div>
                             `).join('')}
-                            <div class="measure" style="border-style:dashed; cursor:pointer" onclick="addMeasure('${s.id}')">+</div>
+                            <div class="measure" style="border-style:dashed; cursor:pointer; background: transparent;" onclick="addMeasure('${s.id}')">+</div>
                         </div>
                     </div>
                 `).join('');
             }
         }
 
-        // --- Lógica de Transposición mejorada ---
+        // --- Transposición ---
         function processTransposition(input, offset) {
             if (!input || input === '%' || offset === 0) return input;
-            // Divide la entrada por espacios para procesar múltiples acordes
             return input.split(' ').map(chord => transposeChord(chord, offset)).join(' ');
         }
 
         function transposeChord(chord, offset) {
             const match = chord.match(/^([CDEFGAB][#b]?)(.*)$/i);
             if (!match) return chord;
-
-            let root = match[1].charAt(0).toUpperCase() + match[1].slice(1).replace('b', (m) => {
-                // Conversión simple de bemol a sostenido para el índice
-                return ''; // Manejado abajo con flatToSharp
-            });
-            
-            // Normalizar nota
-            if (match[1].length > 1 && match[1].endsWith('b')) {
-                root = flatToSharp[match[1].charAt(0).toUpperCase() + 'b'] || root;
-            }
-
+            let root = match[1].charAt(0).toUpperCase() + match[1].slice(1);
+            if (match[1].length > 1 && match[1].endsWith('b')) root = flatToSharp[match[1].charAt(0).toUpperCase() + 'b'] || root;
             let idx = notes.indexOf(root);
             if (idx === -1) return chord;
-
             let newIdx = (idx + offset) % 12;
             if (newIdx < 0) newIdx += 12;
-
             return notes[newIdx] + match[2];
         }
 
-        // --- Funciones de Interfaz ---
         function transpose(steps) { getProj().transposeOffset += steps; render(); }
         function resetTranspose() { getProj().transposeOffset = 0; render(); }
+
+        // --- Plantillas ---
+        function applyTemplate(type) {
+            const p = getProj();
+            if (p.sections.length > 0 && !confirm("Esto reemplazará la estructura actual. ¿Continuar?")) return;
+            
+            p.sections = [];
+            const createSec = (name) => ({ id: 's'+Date.now()+Math.random(), name, color: '#f8f9fa', measures: [
+                {originalVal: '', editing: false}, {originalVal: '%', editing: false}, {originalVal: '', editing: false}, {originalVal: '%', editing: false}
+            ]});
+
+            if (type === 'simple') {
+                ['Intro', 'Verso', 'Coro', 'Outro'].forEach(n => p.sections.push(createSec(n)));
+            } else if (type === 'completa') {
+                ['Intro', 'Verso 1', 'Pre-Coro', 'Coro', 'Verso 2', 'Coro', 'Puente', 'Coro', 'Outro'].forEach(n => p.sections.push(createSec(n)));
+            }
+            render();
+        }
+
+        // --- Presentación y PDF ---
+        function generatePresentationHTML() {
+            const p = getProj();
+            let html = `
+                <h1 style="text-align: center; margin-bottom: 5px;">${p.name}</h1>
+                <div style="text-align: center; margin-bottom: 30px; font-size: 14px; color: #555;">
+                    ${p.meta.singer ? `<span>Artista: <b>${p.meta.singer}</b></span> | ` : ''}
+                    ${p.meta.key ? `<span>Tonalidad: <b>${p.meta.key}</b></span> | ` : ''}
+                    ${p.meta.time ? `<span>Compás: <b>${p.meta.time}</b></span>` : ''}
+                </div>
+            `;
+            
+            p.sections.forEach(s => {
+                html += `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px;">${s.name}</h3>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                `;
+                s.measures.forEach(m => {
+                    let val = processTransposition(m.originalVal, p.transposeOffset) || ' ';
+                    html += `<div style="border: 1px solid #000; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; border-radius: 5px;">${val}</div>`;
+                });
+                html += `</div></div>`;
+            });
+            return html;
+        }
+
+        function openPresentation() {
+            document.getElementById('print-area').innerHTML = generatePresentationHTML();
+            document.getElementById('presentation-modal').style.display = 'block';
+        }
+
+        function closePresentation() { document.getElementById('presentation-modal').style.display = 'none'; }
+
+        function downloadPDF() {
+            const printArea = document.getElementById('print-area');
+            printArea.innerHTML = generatePresentationHTML();
+            
+            const opt = {
+                margin:       10,
+                filename:     `${getProj().name}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            printArea.style.display = 'block';
+            html2pdf().set(opt).from(printArea).save().then(() => {
+                if (document.getElementById('presentation-modal').style.display === 'none') {
+                    printArea.innerHTML = '';
+                }
+            });
+        }
+
+        // --- Utilidades generales ---
         function setTab(tab) { activeTab = tab; render(); }
         function selectProject(id) { activeId = id; render(); }
-        
         function addProject(name = null) {
             const n = name || prompt("Nombre de la canción:");
             if (n) {
@@ -227,11 +374,9 @@
                 render();
             }
         }
-
         function updateMeta(field, val) { getProj().meta[field] = val; }
         function savePizarra() { getProj().pizarra = document.getElementById('rich-editor').innerHTML; }
         function formatDoc(cmd, val = null) { document.execCommand(cmd, false, val); }
-
         function addSection() {
             const name = prompt("Nombre (Intro, Verso...):");
             if (name) { getProj().sections.push({ id: 's'+Date.now(), name, color: '#f8f9fa', measures: [] }); render(); }
@@ -243,7 +388,6 @@
         }
         function deleteSection(id) { if(confirm("¿Borrar sección?")) { getProj().sections = getProj().sections.filter(x => x.id !== id); render(); } }
         function updateColor(sid, c) { getSection(sid).color = c; render(); }
-
         function addMeasure(sid) { getSection(sid).measures.push({ originalVal: '', editing: true }); render(); }
         function editMeasure(sid, idx) { getSection(sid).measures[idx].editing = true; render(); }
         function saveMeasure(sid, idx) { 
