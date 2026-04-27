@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Priel Musical</title>
+    <style>
+        body { display: flex; height: 100vh; margin: 0; font-family: system-ui, sans-serif; }
+        
+        .sidebar { width: 250px; background: #f8f9fa; padding: 20px; border-right: 1px solid #e9ecef; }
+        .app-title { font-size: 18px; font-weight: bold; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; color: #000; }
+        .sidebar h3 { font-size: 14px; color: #6c757d; margin-top: 0; }
+        .project-item { padding: 10px; background: #ffc107; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        .main { flex: 1; padding: 30px; background: #ffffff; overflow-y: auto; }
+        
+        .tabs { display: flex; gap: 20px; border-bottom: 1px solid #dee2e6; margin-bottom: 20px; }
+        .tab { padding: 10px 5px; cursor: pointer; color: #6c757d; }
+        .tab.active { border-bottom: 3px solid #ffc107; color: #000; font-weight: bold; }
+
+        .controls { display: flex; gap: 10px; margin-bottom: 30px; }
+        .btn { padding: 6px 12px; border: 1px solid #ced4da; border-radius: 4px; background: white; cursor: pointer; }
+
+        .section-title { margin-bottom: 10px; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        
+        .measure { 
+            border: 2px solid #dee2e6; 
+            border-radius: 8px; 
+            height: 80px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 20px; 
+            font-weight: bold; 
+            background: #f8f9fa;
+            cursor: grab;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="app-title">🎵 Priel Musical</div>
+        <h3>PROYECTOS</h3>
+        <div class="project-item">Can't Get You Off My Mind</div>
+    </div>
+
+    <div class="main">
+        <h1>Can't Get You Off My Mind</h1>
+        
+        <div class="tabs">
+            <div class="tab">Pizarra</div>
+            <div class="tab active">Score</div>
+            <div class="tab">Entrenamiento</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn">v -%</button>
+            <button class="btn">^ +%</button>
+            <button class="btn">Descargar PDF</button>
+        </div>
+
+        <div class="section-title">Intro</div>
+        <div class="grid" id="sortable-grid">
+            <div class="measure">G</div>
+            <div class="measure">%</div>
+            <div class="measure">Am</div>
+            <div class="measure">%</div>
+        </div>
+    </div>
+
+</body>
+</html>
