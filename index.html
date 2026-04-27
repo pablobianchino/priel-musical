@@ -4,36 +4,38 @@
     <meta charset="UTF-8">
     <title>Priel Musical</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         :root { --accent: #ffc107; --border-radius: 20px; }
         body { display: flex; height: 100vh; margin: 0; font-family: system-ui, sans-serif; background: #fff; color: #333; }
         
         /* Layout Principal y Sidebar */
-        .sidebar { width: 260px; background: #f8f9fa; padding: 20px; border-right: 1px solid #e9ecef; display: flex; flex-direction: column; gap: 15px; }
+        .sidebar { width: 260px; background: #f8f9fa; padding: 20px; border-right: 1px solid #e9ecef; display: flex; flex-direction: column; gap: 15px; position: relative; }
         .app-title { font-size: 20px; font-weight: bold; color: #000; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         
         .search-box { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; box-sizing: border-box; font-size: 0.9rem; background: white; }
         .sidebar-header { font-size: 0.8rem; color: #666; font-weight: bold; display: flex; align-items: center; gap: 5px; margin-top: 5px; }
         
         .project-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
-        .project-item { padding: 10px 15px; background: transparent; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
+        .project-item { padding: 10px 15px; background: transparent; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 0.95rem; display: flex; align-items: center; justify-content: space-between; }
         .project-item:hover { background: #e9ecef; }
         .project-item.active { background: var(--accent); font-weight: bold; color: #000; }
         
-        .add-project-link { padding: 10px 15px; cursor: pointer; color: #555; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+        .add-project-link { padding: 10px 15px; cursor: pointer; color: #555; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; margin-top: auto; }
         .add-project-link:hover { color: #000; font-weight: 500; }
         
         .main { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
         
-        /* Cabecera y Botones Redondeados */
+        /* Cabecera, Título Editable y Botones Redondeados */
         .song-header { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
         .song-title-row { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .song-title { font-size: 1.8rem; font-weight: bold; margin: 0; }
+        .song-title { font-size: 1.8rem; font-weight: bold; margin: 0; outline: none; border-bottom: 2px solid transparent; }
+        .song-title[contenteditable="true"]:focus { border-color: var(--accent); }
         
         .top-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .btn-pill { 
             padding: 6px 16px; border: 1px solid #ccc; border-radius: var(--border-radius); 
-            background: white; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; 
+            background: white; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; outline: none;
         }
         .btn-pill:hover { background: #f0f0f0; }
         
@@ -64,17 +66,31 @@
         .editor { flex: 1; border: 1px solid #ccc; border-radius: 10px; padding: 15px; min-height: 300px; outline: none; }
         
         /* Score y Compases */
-        .score-actions { margin-bottom: 15px; }
-        .section-container { margin-bottom: 35px; padding: 15px; border-radius: 15px; border: 1px solid #eee; }
-        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .score-actions { margin-bottom: 15px; display: flex; gap: 10px; }
+        .section-container { margin-bottom: 35px; border-radius: 15px; border: 1px solid #eee; background: transparent; }
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 15px 15px 0 15px; }
+        .section-header-left { display: flex; align-items: center; gap: 15px; position: relative; }
         .palette { display: flex; gap: 5px; margin-right: 15px; }
         .color-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
-        .measure { border: 2px solid #ddd; border-radius: 10px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; background: #fff; position: relative; }
-        .measure input { width: 85%; border: none; border-bottom: 2px solid var(--accent); outline: none; text-align: center; font-size: 1rem; }
-        .save-btn, .del-btn { position: absolute; bottom: 2px; font-size: 10px; cursor: pointer; border: none; border-radius: 3px; padding: 2px 5px; }
-        .save-btn { right: 2px; background: #4caf50; color: white; }
-        .del-btn { left: 2px; background: none; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; padding: 0 15px 15px 15px; }
+        .measure { border: 2px solid #ddd; border-radius: 10px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; background: #fff; position: relative; padding: 0 5px; }
+        .measure input { width: 100%; border: none; border-bottom: 2px solid var(--accent); outline: none; text-align: center; font-size: 1rem; }
+        .edit-controls { position: absolute; bottom: 2px; left: 2px; display: flex; gap: 5px; }
+        .save-btn, .del-btn { font-size: 10px; cursor: pointer; border: none; border-radius: 3px; padding: 2px 5px; }
+        .save-btn { background: #4caf50; color: white; }
+        .del-btn { background: none; }
+        
+        /* Símbolos de Compás */
+        .symbol { font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #555; display: inline-block; }
+        .check-pill { display: flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 10px; background: transparent; cursor: pointer; font-size: 0.8rem; }
+        .check-pill.active { background: var(--accent); font-weight: bold; }
+        .check-pill input { display: none; }
+
+        /* Panel de Controles de Sección */
+        .section-controls-panel { display: none; position: absolute; background-color: #fff; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 10; border-radius: 10px; border: 1px solid #eee; padding: 15px; gap: 15px; flex-direction: column; top: 100%; left: 0; margin-top: 5px; }
+        .section-controls-panel.active { display: flex; }
+        .controls-row { display: flex; align-items: center; justify-content: space-between; }
+        .repeat-counter { display: flex; align-items: center; gap: 5px; font-weight: bold; color: var(--accent); }
 
         /* Modal Presentación */
         #presentation-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f4f4; z-index: 1000; overflow-y: auto; padding: 40px; box-sizing: border-box; }
@@ -93,7 +109,7 @@
     <div class="sidebar">
         <div class="app-title">🎵 Priel Musical</div>
         
-        <input type="text" id="search-input" class="search-box" placeholder="🔍 Buscar proyectos..." onkeyup="filterProjects()">
+        <input type="text" id="search-input" class="search-box" placeholder="🔍 Buscar canciones..." onkeyup="filterProjects()">
         
         <div class="sidebar-header">⌄ CANCIONES</div>
         
@@ -107,7 +123,7 @@
     <div class="main" id="main-content" style="display: none;">
         <div class="song-header">
             <div class="song-title-row">
-                <h1 class="song-title" id="project-name"></h1>
+                <h1 class="song-title" id="project-name" contenteditable="true" onblur="saveProjectName(this)" onkeypress="handleTitleKey(event, this)"></h1>
                 <span style="color: #ccc;">✓</span>
             </div>
             
@@ -179,36 +195,89 @@
     </div>
 
     <script>
-        const colors = ['#f8f9fa', '#ffebee', '#e8f5e9', '#e3f2fd', '#fffde7', '#f3e5f5', '#e0f7fa'];
+        const colors = ['#f8f9fa', '#ffebee', '#e8f5e9', '#e3f2fd', '#fffde7', '#f3e5f5', '#e0f7fa', '#ffe0b2'];
         const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         const flatToSharp = { 'Db':'C#', 'Eb':'D#', 'Gb':'F#', 'Ab':'G#', 'Bb':'A#' };
+
+        // --- Supabase Configuración (Marcador de posición) ---
+        const SUPABASE_URL = 'TU_SUPABASE_URL';
+        const SUPABASE_KEY = 'TU_SUPABASE_KEY';
+        const { createClient } = supabase;
+        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let projects = [];
         let activeId = null;
         let activeTab = 'score';
 
-        function init() {
+        // --- Inicialización y Carga de Supabase ---
+        async function init() {
             const keySelect = document.getElementById('meta-key');
             notes.forEach(n => {
                 keySelect.innerHTML += `<option value="${n}">${n}</option><option value="${n}m">${n}m</option>`;
             });
-            addProject("Demo");
+            await loadProjects();
         }
 
+        async function loadProjects() {
+            // Lógica de Supabase: cargar proyectos, secciones y compases, guardado automático.
+            // Para simplificar, cargaré un demo si Supabase no está configurado.
+            if(SUPABASE_URL === 'TU_SUPABASE_URL') {
+                projects = [{ id: 1, name: "Demo: Can't Get You Off My Mind", meta: { singer: 'Lenny Kravitz', key: 'Gm', time: '4/4' }, pizarra: '', sections: [
+                    { id: 's1', name: 'Intro', color: '#e3f2fd', repeat_count: 1, collapsed: false, measures: [
+                        {originalVal: '||:G', editing: false}, {originalVal: '%', editing: false}, {originalVal: 'Am', editing: false}, {originalVal: '%:||', editing: false}
+                    ]}
+                ], transposeOffset: 0 }];
+                activeId = 1;
+                render();
+                return;
+            }
+
+            // Implementar lógica de Supabase aquí...
+        }
+
+        // --- Manejo de Datos (JS Local y Supabase) ---
+        async function handleProjectData(type, id, data) {
+            // Implementar lógica de Supabase genérica aquí...
+            render();
+        }
+
+        // --- Interfaz de Canción ---
         function filterProjects() {
             const term = document.getElementById('search-input').value.toLowerCase();
             const items = document.querySelectorAll('.project-item');
             items.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                item.style.display = text.includes(term) ? 'block' : 'none';
+                const text = item.querySelector('span').textContent.toLowerCase();
+                item.style.display = text.includes(term) ? 'flex' : 'none';
             });
+        }
+
+        function handleTitleKey(e, el) { if (e.key === 'Enter') el.blur(); }
+
+        async function saveProjectName(el) {
+            const p = getProj();
+            const newName = el.textContent.trim();
+            if(p && newName !== p.name) {
+                p.name = newName;
+                // Implementar Supabase: update_project_name(p.id, p.name)
+                render();
+            }
+        }
+
+        async function deleteProjectHandler(id) {
+            if(confirm("¿Estás seguro de que quieres eliminar esta canción?")) {
+                projects = projects.filter(x => x.id !== id);
+                if(activeId === id) activeId = null;
+                // Implementar Supabase: delete_project(id)
+                render();
+            }
         }
 
         function render() {
             const list = document.getElementById('project-list');
             list.innerHTML = projects.map(p => `
                 <div class="project-item ${p.id === activeId ? 'active' : ''}" onclick="selectProject(${p.id})">
-                    ${p.name}
+                    <span>${p.name}</span>
+                    <button class="del-btn" onclick="deleteProjectHandler(${p.id})">🗑️</button>
                 </div>
             `).join('');
             
@@ -237,32 +306,57 @@
             } else {
                 const container = document.getElementById('sections-content');
                 container.innerHTML = project.sections.map(s => `
-                    <div class="section-container" style="background:${s.color}30; border-left:5px solid ${s.color === '#f8f9fa' ? '#ccc' : s.color}">
+                    <div class="section-container ${s.collapsed ? 'collapsed' : ''}" id="sec-${s.id}" style="border-left:5px solid ${s.color === '#f8f9fa' ? '#ccc' : s.color}">
                         <div class="section-header">
-                            <div style="display:flex; align-items:center;">
-                                <div class="palette">
-                                    ${colors.map(c => `<div class="color-dot" style="background:${c}" onclick="updateColor('${s.id}', '${c}')"></div>`).join('')}
+                            <div class="section-header-left">
+                                <div class="color-dot" style="background:${s.color}" onclick="toggleSectionCollapse('${s.id}')"></div>
+                                ${!s.collapsed ? `<span style="font-weight:bold">${s.name} ${s.repeat_count > 1 ? `x${s.repeat_count}` : ''}</span>` : ''}
+                                <div class="section-controls-panel" id="controls-${s.id}">
+                                    <div class="controls-row">
+                                        <div class="palette">
+                                            ${colors.map(c => `<div class="color-dot" style="background:${c}" onclick="updateColor('${s.id}', '${c}')"></div>`).join('')}
+                                        </div>
+                                    </div>
+                                    <div class="controls-row">
+                                        <div class="repeat-counter">
+                                            <span>Repetir:</span>
+                                            <button class="btn-pill" style="padding:2px 8px" onclick="changeRepeat('${s.id}', -1)">-</button>
+                                            <span style="font-weight:bold">${s.repeat_count > 1 ? `x${s.repeat_count}` : 'x1'}</span>
+                                            <button class="btn-pill" style="padding:2px 8px" onclick="changeRepeat('${s.id}', 1)">+</button>
+                                        </div>
+                                        <div style="display:flex; gap:5px;">
+                                            <button class="btn-pill" style="padding:2px 8px" onclick="duplicateSection('${s.id}')">📋</button>
+                                            <button class="btn-pill" style="padding:2px 8px" onclick="deleteSection('${s.id}')">🗑️</button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span style="font-weight:bold">${s.name}</span>
-                            </div>
-                            <div style="display:flex; gap:5px;">
-                                <button class="btn-pill" style="padding:2px 8px" onclick="duplicateSection('${s.id}')">📋</button>
-                                <button class="btn-pill" style="padding:2px 8px" onclick="deleteSection('${s.id}')">🗑️</button>
                             </div>
                         </div>
                         <div class="grid">
-                            ${s.measures.map((m, idx) => `
+                            ${s.measures.map((m, idx) => {
+                                let val = m.editing ? m.originalVal : processTransposition(m.originalVal, project.transposeOffset);
+                                return `
                                 <div class="measure">
                                     ${m.editing ? 
-                                        `<input type="text" id="in-${s.id}-${idx}" value="${m.originalVal}" onkeydown="handleKey(event, '${s.id}', ${idx})">
-                                         <button class="save-btn" onclick="saveMeasure('${s.id}', ${idx})">✓</button>
-                                         <button class="del-btn" onclick="deleteMeasure('${s.id}', ${idx})">🗑️</button>` : 
-                                        `<span style="width:100%; text-align:center; cursor:pointer" onclick="editMeasure('${s.id}', ${idx})">
-                                            ${processTransposition(m.originalVal, project.transposeOffset)}
+                                        `<input type="text" id="in-${s.id}-${idx}" value="${val}" onkeydown="handleKey(event, '${s.id}', ${idx})">
+                                         <div class="edit-controls">
+                                             <label class="check-pill ${val.startsWith('||:') ? 'active' : ''}">
+                                                 <input type="checkbox" onchange="toggleSymbol('${s.id}', ${idx}, 'start')"> ||:
+                                             </label>
+                                             <label class="check-pill ${val.endsWith(':||') ? 'active' : ''}">
+                                                 <input type="checkbox" onchange="toggleSymbol('${s.id}', ${idx}, 'end')"> :||
+                                             </label>
+                                             <button class="save-btn" onclick="saveMeasure('${s.id}', ${idx})">✓</button>
+                                             <button class="del-btn" onclick="deleteMeasure('${s.id}', ${idx})">🗑️</button>
+                                         </div>` : 
+                                        `<span style="width:100%; text-align:center; cursor:pointer; display: flex; align-items: center; justify-content: space-between; padding: 0 5px;" onclick="editMeasure('${s.id}', ${idx})">
+                                            ${val.startsWith('||:') ? '<span class="symbol">||:</span>' : '<span></span>'}
+                                            ${val.replace('||:', '').replace(':||', '') || '...'}
+                                            ${val.endsWith(':||') ? '<span class="symbol">:||</span>' : '<span></span>'}
                                          </span>`
                                     }
                                 </div>
-                            `).join('')}
+                            `}).join('')}
                             <div class="measure" style="border-style:dashed; cursor:pointer; background: transparent;" onclick="addMeasure('${s.id}')">+</div>
                         </div>
                     </div>
@@ -297,7 +391,7 @@
             if (p.sections.length > 0 && !confirm("Esto reemplazará la estructura actual. ¿Continuar?")) return;
             
             p.sections = [];
-            const createSec = (name) => ({ id: 's'+Date.now()+Math.random(), name, color: '#f8f9fa', measures: [
+            const createSec = (name) => ({ id: 's'+Date.now()+Math.random(), name, color: '#f8f9fa', repeat_count: 1, collapsed: false, measures: [
                 {originalVal: '', editing: false}, {originalVal: '%', editing: false}, {originalVal: '', editing: false}, {originalVal: '%', editing: false}
             ]});
 
@@ -324,7 +418,7 @@
             p.sections.forEach(s => {
                 html += `
                     <div style="margin-bottom: 20px;">
-                        <h3 style="margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px;">${s.name}</h3>
+                        <h3 style="margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px;">${s.name} ${s.repeat_count > 1 ? `x${s.repeat_count}` : ''}</h3>
                         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
                 `;
                 s.measures.forEach(m => {
@@ -371,32 +465,149 @@
             if (n) {
                 projects.push({ id: Date.now(), name: n, meta: { singer: '', key: '', time: '' }, pizarra: '', sections: [], transposeOffset: 0 });
                 activeId = projects[projects.length - 1].id;
+                // Implementar Supabase: insert_project(p)
                 render();
             }
         }
-        function updateMeta(field, val) { getProj().meta[field] = val; }
-        function savePizarra() { getProj().pizarra = document.getElementById('rich-editor').innerHTML; }
+        function updateMeta(field, val) { getProj().meta[field] = val; /* Implementar Supabase: update_project_meta(p.id, p.meta) */ }
+        function savePizarra() { getProj().pizarra = document.getElementById('rich-editor').innerHTML; /* Implementar Supabase: update_pizarra(p.id, p.pizarra) */ }
         function formatDoc(cmd, val = null) { document.execCommand(cmd, false, val); }
+        
         function addSection() {
             const name = prompt("Nombre (Intro, Verso...):");
-            if (name) { getProj().sections.push({ id: 's'+Date.now(), name, color: '#f8f9fa', measures: [] }); render(); }
+            if (name) { getProj().sections.push({ id: 's'+Date.now(), name, color: '#f8f9fa', repeat_count: 1, collapsed: false, measures: [] }); render(); }
         }
         function duplicateSection(id) {
             const s = getSection(id);
-            getProj().sections.push({...s, id: 's'+Date.now(), measures: JSON.parse(JSON.stringify(s.measures))});
+            getProj().sections.push({...s, id: 's'+Date.now(), measures: JSON.parse(JSON.stringify(s.measures)).map(m => ({...m, editing: false}))});
             render();
         }
         function deleteSection(id) { if(confirm("¿Borrar sección?")) { getProj().sections = getProj().sections.filter(x => x.id !== id); render(); } }
         function updateColor(sid, c) { getSection(sid).color = c; render(); }
+        
+        function toggleSectionCollapse(id) {
+            const s = getSection(id);
+            if(s.collapsed) {
+                s.collapsed = false;
+                render();
+            } else {
+                // Al colapsar, ocultar el panel de controles también
+                document.getElementById(`controls-${id}`).classList.remove('active');
+                s.collapsed = true;
+                render();
+            }
+        }
+
+        // Panel de Controles
+        function getSectionHeader(sid) { return document.getElementById(`sec-${sid}`).querySelector('.section-header-left'); }
+        
+        window.addEventListener('click', (e) => {
+            if(!e.target.matches('.color-dot') && !e.target.closest('.section-controls-panel')) {
+                document.querySelectorAll('.section-controls-panel').forEach(p => p.classList.remove('active'));
+            }
+        });
+
+        function changeRepeat(sid, steps) {
+            const s = getSection(sid);
+            if(s) {
+                s.repeat_count = Math.max(1, s.repeat_count + steps);
+                render();
+                // Persistencia automática Supabase...
+            }
+        }
+
+        // --- Compases y Símbolos ---
         function addMeasure(sid) { getSection(sid).measures.push({ originalVal: '', editing: true }); render(); }
         function editMeasure(sid, idx) { getSection(sid).measures[idx].editing = true; render(); }
         function saveMeasure(sid, idx) { 
-            const val = document.getElementById(`in-${sid}-${idx}`).value;
+            const val = document.getElementById(`in-${sid}-${idx}`).value.trim();
             getSection(sid).measures[idx] = { originalVal: val || '%', editing: false };
             render();
         }
         function deleteMeasure(sid, idx) { getSection(sid).measures.splice(idx, 1); render(); }
         function handleKey(e, sid, idx) { if (e.key === 'Enter') saveMeasure(sid, idx); }
+        
+        function toggleSymbol(sid, idx, type) {
+            const input = document.getElementById(`in-${sid}-${idx}`);
+            let val = input.value;
+            if(type === 'start') {
+                val = val.startsWith('||:') ? val.replace('||:', '') : '||:' + val;
+            } else if(type === 'end') {
+                val = val.endsWith(':||') ? val.replace(':||', '') : val + ':||';
+            }
+            input.value = val;
+            render(); // Rerenderiza solo los controles de edición para reflejar el estado activo
+        }
+
+        // Panel de Controles
+        function showSectionControls(sid) {
+            const panel = document.getElementById(`controls-${sid}`);
+            if(panel) panel.classList.toggle('active');
+        }
+        
+        // Sobreescribir renderScore para añadir el controlador del panel de controles
+        function renderScore(project) {
+            const container = document.getElementById('sections-content');
+            container.innerHTML = project.sections.map((s, sIndex) => `
+                <div class="section-container ${s.collapsed ? 'collapsed' : ''}" id="sec-${s.id}" style="border-left:5px solid ${s.color === '#f8f9fa' ? '#ccc' : s.color}">
+                    <div class="section-header">
+                        <div class="section-header-left">
+                            <div class="color-dot" style="background:${s.color}" onclick="toggleSectionCollapse('${s.id}')"></div>
+                            ${!s.collapsed ? `<span style="font-weight:bold">${s.name} ${s.repeat_count > 1 ? `x${s.repeat_count}` : ''}</span>` : ''}
+                            <button class="icon-btn" style="opacity:1" onclick="showSectionControls('${s.id}')">...</button>
+                            <div class="section-controls-panel" id="controls-${s.id}">
+                                <div class="controls-row">
+                                    <div class="palette">
+                                        ${colors.map(c => `<div class="color-dot" style="background:${c}" onclick="updateColor('${s.id}', '${c}')"></div>`).join('')}
+                                    </div>
+                                </div>
+                                <div class="controls-row">
+                                    <div class="repeat-counter">
+                                        <span>Repetir:</span>
+                                        <button class="btn-pill" style="padding:2px 8px" onclick="changeRepeat('${s.id}', -1)">-</button>
+                                        <span style="font-weight:bold">${s.repeat_count > 1 ? `x${s.repeat_count}` : 'x1'}</span>
+                                        <button class="btn-pill" style="padding:2px 8px" onclick="changeRepeat('${s.id}', 1)">+</button>
+                                    </div>
+                                    <div style="display:flex; gap:5px;">
+                                        <button class="btn-pill" style="padding:2px 8px" onclick="duplicateSection('${s.id}')">📋</button>
+                                        <button class="btn-pill" style="padding:2px 8px" onclick="deleteSection('${s.id}')">🗑️</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid">
+                        ${s.measures.map((m, idx) => {
+                            let val = m.editing ? m.originalVal : processTransposition(m.originalVal, project.transposeOffset);
+                            return `
+                            <div class="measure">
+                                ${m.editing ? 
+                                    `<input type="text" id="in-${s.id}-${idx}" value="${val}" onkeydown="handleKey(event, '${s.id}', ${idx})">
+                                     <div class="edit-controls">
+                                         <label class="check-pill ${val.startsWith('||:') ? 'active' : ''}">
+                                             <input type="checkbox" onchange="toggleSymbol('${s.id}', ${idx}, 'start')"> ||:
+                                         </label>
+                                         <label class="check-pill ${val.endsWith(':||') ? 'active' : ''}">
+                                             <input type="checkbox" onchange="toggleSymbol('${s.id}', ${idx}, 'end')"> :||
+                                         </label>
+                                         <button class="save-btn" onclick="saveMeasure('${s.id}', ${idx})">✓</button>
+                                         <button class="del-btn" onclick="deleteMeasure('${s.id}', ${idx})">🗑️</button>
+                                     </div>` : 
+                                    `<span style="width:100%; text-align:center; cursor:pointer; display: flex; align-items: center; justify-content: space-between; padding: 0 5px;" onclick="editMeasure('${s.id}', ${idx})">
+                                        ${val.startsWith('||:') ? '<span class="symbol">||:</span>' : '<span></span>'}
+                                        ${val.replace('||:', '').replace(':||', '') || '...'}
+                                        ${val.endsWith(':||') ? '<span class="symbol">:||</span>' : '<span></span>'}
+                                     </span>`
+                                }
+                            </div>
+                        `}).join('')}
+                        <div class="measure" style="border-style:dashed; cursor:pointer; background: transparent;" onclick="addMeasure('${s.id}')">+</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Reubicar la función showSectionControls después de redefinir renderScore
 
         function getProj() { return projects.find(p => p.id === activeId); }
         function getSection(id) { return getProj().sections.find(s => s.id === id); }
