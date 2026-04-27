@@ -19,6 +19,10 @@
         .project-item:hover { background: #e9ecef; }
         .project-item.active { background: var(--accent); font-weight: bold; color: #000; }
         
+        /* Tacho de basura en hover */
+        .project-item .del-btn { display: none; }
+        .project-item:hover .del-btn { display: block; }
+        
         .add-project-link { padding: 10px 15px; cursor: pointer; color: #555; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; margin-top: auto; }
         .add-project-link:hover { color: #000; font-weight: 500; }
         
@@ -57,10 +61,17 @@
         .section-container.collapsed { margin-bottom: 15px; border: none; padding-bottom: 0; }
         .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 15px 15px 0 15px; }
         .section-header-left { display: flex; align-items: center; gap: 10px; position: relative; }
+        
         .collapse-icon { cursor: pointer; color: #999; font-size: 1.2rem; width: 15px; text-align: center; user-select: none; }
         .collapse-icon:hover { color: #000; }
+        
+        /* Controles de sección en hover */
+        .dot-wrapper { position: relative; display: inline-block; height: 18px; }
+        .color-dot { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
         .palette { display: flex; gap: 5px; margin-right: 15px; }
-        .color-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); }
+        .section-controls-panel { display: none; position: absolute; background-color: #fff; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 10; border-radius: 10px; border: 1px solid #eee; padding: 15px; gap: 15px; flex-direction: column; top: 100%; left: 0; }
+        .dot-wrapper:hover .section-controls-panel { display: flex; }
+        
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; padding: 0 15px 15px 15px; }
         .measure { border: 2px solid #ddd; border-radius: 10px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; background: #fff; position: relative; padding: 0 5px; }
         .measure input { width: 100%; border: none; border-bottom: 2px solid var(--accent); outline: none; text-align: center; font-size: 1rem; }
@@ -74,8 +85,6 @@
         .check-pill.active { background: var(--accent); font-weight: bold; }
         .check-pill input { display: none; }
 
-        .section-controls-panel { display: none; position: absolute; background-color: #fff; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1); z-index: 10; border-radius: 10px; border: 1px solid #eee; padding: 15px; gap: 15px; flex-direction: column; top: 100%; left: 25px; margin-top: 5px; }
-        .section-controls-panel.active { display: flex; }
         .controls-row { display: flex; align-items: center; justify-content: space-between; }
         .repeat-counter { display: flex; align-items: center; gap: 5px; font-weight: bold; color: var(--accent); }
 
@@ -182,23 +191,10 @@
         }
 
         async function loadProjects() {
-            // Ejemplo de fetch a Vercel Serverless Function (comentado)
-            /*
-            try {
-                const res = await fetch('/api/projects');
-                const data = await res.json();
-                projects = data;
-                activeId = projects.length > 0 ? projects[0].id : null;
-            } catch (err) {
-                console.error("Error cargando BD", err);
-            }
-            */
-            
-            // Fallback Local (memoria) mientras conectas Neon
             if(projects.length === 0) {
                 projects = [{ id: 1, name: "Demo: Can't Get You Off My Mind", meta: { singer: 'Lenny Kravitz', key: 'Gm', time: '4/4' }, pizarra: '', sections: [
                     { id: 's1', name: 'Intro', color: '#e3f2fd', repeat_count: 1, collapsed: false, measures: [
-                        {originalVal: '||:G', editing: false}, {originalVal: '%', editing: false}, {originalVal: 'Am', editing: false}, {originalVal: '%:||', editing: false}
+                        {originalVal: '||: G', editing: false}, {originalVal: '%', editing: false}, {originalVal: 'Am', editing: false}, {originalVal: '% :||', editing: false}
                     ]}
                 ], transposeOffset: 0 }];
                 activeId = 1;
@@ -207,18 +203,8 @@
         }
 
         async function saveState() {
-            render(); // Actualiza UI inmediatamente
-            
-            // Ejemplo de fetch para guardar en backend (Neon vía Vercel API)
-            /*
-            if(activeId) {
-                await fetch('/api/projects/update', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(getProj())
-                });
-            }
-            */
+            render(); 
+            // Fetch a tu API aquí
         }
 
         function filterProjects() {
@@ -251,7 +237,7 @@
             list.innerHTML = projects.map(p => `
                 <div class="project-item ${p.id === activeId ? 'active' : ''}" onclick="selectProject(${p.id})">
                     <span>${p.name}</span>
-                    <button class="del-btn" onclick="deleteProjectHandler(${p.id})">🗑️</button>
+                    <button class="del-btn" onclick="event.stopPropagation(); deleteProjectHandler(${p.id})">🗑️</button>
                 </div>
             `).join('');
             
@@ -287,51 +273,63 @@
                         <div class="section-header" style="${s.collapsed ? 'padding: 0;' : ''}">
                             <div class="section-header-left">
                                 <span class="collapse-icon" onclick="toggleSectionCollapse('${s.id}')">${s.collapsed ? '›' : '⌄'}</span>
-                                <div class="color-dot" style="background:${s.color}" onclick="showSectionControls('${s.id}')"></div>
-                                ${!s.collapsed ? `<span style="font-weight:bold">${s.name} ${s.repeat_count > 1 ? `x${s.repeat_count}` : ''}</span>` : ''}
                                 
-                                <div class="section-controls-panel" id="controls-${s.id}">
-                                    <div class="controls-row">
-                                        <div class="palette">
-                                            ${colors.map(c => `<div class="color-dot" style="background:${c}" onclick="updateColor('${s.id}', '${c}')"></div>`).join('')}
+                                <div class="dot-wrapper">
+                                    <div class="color-dot" style="background:${s.color}"></div>
+                                    <div class="section-controls-panel">
+                                        <div class="controls-row">
+                                            <div class="palette">
+                                                ${colors.map(c => `<div class="color-dot" style="background:${c}" onclick="updateColor('${s.id}', '${c}')"></div>`).join('')}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="controls-row">
-                                        <div class="repeat-counter">
-                                            <span>Repetir:</span>
-                                            <button class="btn-pill" style="padding:2px 8px" onclick="changeRepeat('${s.id}', -1)">-</button>
-                                            <span style="font-weight:bold">${s.repeat_count > 1 ? `x${s.repeat_count}` : 'x1'}</span>
-                                            <button class="btn-pill" style="padding:2px 8px" onclick="changeRepeat('${s.id}', 1)">+</button>
-                                        </div>
-                                        <div style="display:flex; gap:5px;">
-                                            <button class="btn-pill" style="padding:2px 8px" onclick="duplicateSection('${s.id}')">📋</button>
-                                            <button class="btn-pill" style="padding:2px 8px" onclick="deleteSection('${s.id}')">🗑️</button>
+                                        <div class="controls-row">
+                                            <div class="repeat-counter">
+                                                <span>Repetir:</span>
+                                                <button class="btn-pill" style="padding:2px 8px" onclick="changeRepeat('${s.id}', -1)">-</button>
+                                                <span style="font-weight:bold">${s.repeat_count > 1 ? `x${s.repeat_count}` : 'x1'}</span>
+                                                <button class="btn-pill" style="padding:2px 8px" onclick="changeRepeat('${s.id}', 1)">+</button>
+                                            </div>
+                                            <div style="display:flex; gap:5px;">
+                                                <button class="btn-pill" style="padding:2px 8px" onclick="duplicateSection('${s.id}')">📋</button>
+                                                <button class="btn-pill" style="padding:2px 8px" onclick="deleteSection('${s.id}')">🗑️</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <span style="font-weight:bold">${s.name} ${s.repeat_count > 1 ? `x${s.repeat_count}` : ''}</span>
+                            </div>
+                            
+                            <div style="display:flex; gap: 5px;">
+                                <button class="btn-pill" style="padding: 2px 8px; font-weight: bold;" onclick="moveSection('${s.id}', -1)" title="Subir sección">↑</button>
+                                <button class="btn-pill" style="padding: 2px 8px; font-weight: bold;" onclick="moveSection('${s.id}', 1)" title="Bajar sección">↓</button>
                             </div>
                         </div>
                         <div class="grid" style="${s.collapsed ? 'display: none;' : ''}">
                             ${s.measures.map((m, idx) => {
                                 let val = m.editing ? m.originalVal : processTransposition(m.originalVal, project.transposeOffset);
+                                const hasStart = val.includes('||:');
+                                const hasEnd = val.includes(':||');
+                                const cleanVal = val.replace(/\|\|:\s*/g, '').replace(/\s*:\|\|/g, '');
+
                                 return `
                                 <div class="measure">
                                     ${m.editing ? 
                                         `<input type="text" id="in-${s.id}-${idx}" value="${val}" onkeydown="handleKey(event, '${s.id}', ${idx})">
                                          <div class="edit-controls">
-                                             <label class="check-pill ${val.startsWith('||:') ? 'active' : ''}">
+                                             <label class="check-pill ${hasStart ? 'active' : ''}">
                                                  <input type="checkbox" onchange="toggleSymbol('${s.id}', ${idx}, 'start')"> ||:
                                              </label>
-                                             <label class="check-pill ${val.endsWith(':||') ? 'active' : ''}">
+                                             <label class="check-pill ${hasEnd ? 'active' : ''}">
                                                  <input type="checkbox" onchange="toggleSymbol('${s.id}', ${idx}, 'end')"> :||
                                              </label>
                                              <button class="save-btn" onclick="saveMeasure('${s.id}', ${idx})">✓</button>
                                              <button class="del-btn" onclick="deleteMeasure('${s.id}', ${idx})">🗑️</button>
                                          </div>` : 
                                         `<span style="width:100%; text-align:center; cursor:pointer; display: flex; align-items: center; justify-content: space-between; padding: 0 5px;" onclick="editMeasure('${s.id}', ${idx})">
-                                            ${val.startsWith('||:') ? '<span class="symbol">||:</span>' : '<span></span>'}
-                                            ${val.replace('||:', '').replace(':||', '') || '...'}
-                                            ${val.endsWith(':||') ? '<span class="symbol">:||</span>' : '<span></span>'}
+                                            ${hasStart ? '<span class="symbol">||:</span>' : '<span></span>'}
+                                            ${cleanVal || '...'}
+                                            ${hasEnd ? '<span class="symbol">:||</span>' : '<span></span>'}
                                          </span>`
                                     }
                                 </div>
@@ -380,7 +378,10 @@
                 html += `<div style="margin-bottom: 20px;"><h3 style="margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px;">${s.name} ${s.repeat_count > 1 ? `x${s.repeat_count}` : ''}</h3><div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">`;
                 s.measures.forEach(m => {
                     let val = processTransposition(m.originalVal, p.transposeOffset) || ' ';
-                    html += `<div style="border: 1px solid #000; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; border-radius: 5px;">${val}</div>`;
+                    const cleanVal = val.replace(/\|\|:\s*/g, '').replace(/\s*:\|\|/g, '');
+                    const sSym = val.includes('||:') ? '||:' : '';
+                    const eSym = val.includes(':||') ? ':||' : '';
+                    html += `<div style="border: 1px solid #000; height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; font-weight: bold; font-size: 1.2rem; border-radius: 5px;"><span>${sSym}</span><span>${cleanVal}</span><span>${eSym}</span></div>`;
                 });
                 html += `</div></div>`;
             });
@@ -424,13 +425,19 @@
         function updateColor(sid, c) { getSection(sid).color = c; saveState(); }
         
         function toggleSectionCollapse(id) { const s = getSection(id); s.collapsed = !s.collapsed; saveState(); }
-        function showSectionControls(sid) { document.getElementById(`controls-${sid}`).classList.toggle('active'); }
-
-        window.addEventListener('click', (e) => {
-            if(!e.target.matches('.color-dot') && !e.target.closest('.section-controls-panel')) {
-                document.querySelectorAll('.section-controls-panel').forEach(p => p.classList.remove('active'));
+        
+        function moveSection(id, direction) {
+            const p = getProj();
+            const idx = p.sections.findIndex(s => s.id === id);
+            if (idx < 0) return;
+            const newIdx = idx + direction;
+            if (newIdx >= 0 && newIdx < p.sections.length) {
+                const temp = p.sections[idx];
+                p.sections[idx] = p.sections[newIdx];
+                p.sections[newIdx] = temp;
+                saveState();
             }
-        });
+        }
 
         function changeRepeat(sid, steps) { const s = getSection(sid); if(s) { s.repeat_count = Math.max(1, s.repeat_count + steps); saveState(); } }
         function addMeasure(sid) { getSection(sid).measures.push({ originalVal: '', editing: true }); render(); }
@@ -438,13 +445,31 @@
         function saveMeasure(sid, idx) { getSection(sid).measures[idx] = { originalVal: document.getElementById(`in-${sid}-${idx}`).value.trim() || '%', editing: false }; saveState(); }
         function deleteMeasure(sid, idx) { getSection(sid).measures.splice(idx, 1); saveState(); }
         function handleKey(e, sid, idx) { if (e.key === 'Enter') saveMeasure(sid, idx); }
+        
         function toggleSymbol(sid, idx, type) {
             const input = document.getElementById(`in-${sid}-${idx}`);
             let val = input.value;
-            if(type === 'start') val = val.startsWith('||:') ? val.replace('||:', '') : '||:' + val;
-            else if(type === 'end') val = val.endsWith(':||') ? val.replace(':||', '') : val + ':||';
+            
+            if(type === 'start') {
+                val = val.includes('||:') ? val.replace(/\|\|:\s*/g, '') : '||: ' + val;
+            } else if(type === 'end') {
+                val = val.includes(':||') ? val.replace(/\s*:\|\|/g, '') : val + ' :||';
+            }
+            
             input.value = val;
-            input.nextElementSibling.innerHTML = `<label class="check-pill ${val.startsWith('||:') ? 'active' : ''}"><input type="checkbox" onchange="toggleSymbol('${sid}', ${idx}, 'start')"> ||:</label><label class="check-pill ${val.endsWith(':||') ? 'active' : ''}"><input type="checkbox" onchange="toggleSymbol('${sid}', ${idx}, 'end')"> :||</label><button class="save-btn" onclick="saveMeasure('${sid}', ${idx})">✓</button><button class="del-btn" onclick="deleteMeasure('${sid}', ${idx})">🗑️</button>`;
+            
+            const hasStart = val.includes('||:');
+            const hasEnd = val.includes(':||');
+            input.nextElementSibling.innerHTML = `
+                <label class="check-pill ${hasStart ? 'active' : ''}">
+                    <input type="checkbox" onchange="toggleSymbol('${sid}', ${idx}, 'start')"> ||:
+                </label>
+                <label class="check-pill ${hasEnd ? 'active' : ''}">
+                    <input type="checkbox" onchange="toggleSymbol('${sid}', ${idx}, 'end')"> :||
+                </label>
+                <button class="save-btn" onclick="saveMeasure('${sid}', ${idx})">✓</button>
+                <button class="del-btn" onclick="deleteMeasure('${sid}', ${idx})">🗑️</button>
+            `;
         }
 
         function getProj() { return projects.find(p => p.id === activeId); }
